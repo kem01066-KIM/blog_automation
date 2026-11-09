@@ -79,44 +79,62 @@ with tab1:
 
     # 추천 빠른 검색 키워드
     st.write("💡 **인기 카테고리 빠른 선택**")
-    cat_cols = st.columns(6)
-    quick_kw = ""
-    if cat_cols[0].button("☕ 홈카페", use_container_width=True):
-        quick_kw = "홈카페"
-    if cat_cols[1].button("🍳 주방/살림", use_container_width=True):
-        quick_kw = "주방용품 살림"
-    if cat_cols[2].button("👶 육아/키즈", use_container_width=True):
-        quick_kw = "육아용품"
-    if cat_cols[3].button("💄 뷰티/스킨", use_container_width=True):
-        quick_kw = "기초화장품"
-    if cat_cols[4].button("🥗 건강/식단", use_container_width=True):
-        quick_kw = "다이어트 간식"
-    if cat_cols[5].button("👗 패션/잡화", use_container_width=True):
-        quick_kw = "데일리룩"
+    if "search_input" not in st.session_state:
+        st.session_state["search_input"] = "주방용품"
+        
+    c1, c2, c3 = st.columns(3)
+    if c1.button("🍳 주방/살림", use_container_width=True):
+        st.session_state["search_input"] = "주방용품"
+        st.session_state["auto_search"] = True
+        st.rerun()
+    if c2.button("☕ 홈카페", use_container_width=True):
+        st.session_state["search_input"] = "홈카페"
+        st.session_state["auto_search"] = True
+        st.rerun()
+    if c3.button("👶 육아/키즈", use_container_width=True):
+        st.session_state["search_input"] = "육아용품"
+        st.session_state["auto_search"] = True
+        st.rerun()
+
+    c4, c5, c6 = st.columns(3)
+    if c4.button("💄 뷰티/스킨", use_container_width=True):
+        st.session_state["search_input"] = "기초화장품"
+        st.session_state["auto_search"] = True
+        st.rerun()
+    if c5.button("🥗 건강/식단", use_container_width=True):
+        st.session_state["search_input"] = "다이어트 식품"
+        st.session_state["auto_search"] = True
+        st.rerun()
+    if c6.button("👗 패션/잡화", use_container_width=True):
+        st.session_state["search_input"] = "패션잡화"
+        st.session_state["auto_search"] = True
+        st.rerun()
 
     # 키워드 검색창
-    default_query = quick_kw if quick_kw else ("홈카페" if "search_kw" not in st.session_state else st.session_state["search_kw"])
-    keyword = st.text_input("검색할 제품명, 브랜드, 카테고리 입력", value=default_query, placeholder="예: 커피머신, 방한용품, 세라믹식기")
+    keyword = st.text_input("검색할 제품명, 브랜드, 카테고리 입력", key="search_input", placeholder="예: 밀폐용기, 커피머신, 세라믹식기")
     
     search_clicked = st.button("🚀 실시간 인플루언서 발굴 시작", type="primary", use_container_width=True)
+    auto_run = st.session_state.pop("auto_search", False)
     
-    if search_clicked or "last_results" in st.session_state:
-        if search_clicked:
-            st.session_state["search_kw"] = keyword
-            with st.spinner(f"'{keyword}' 관련 {platform} {purpose} 인플루언서를 실시간 분석 중..."):
+    if search_clicked or auto_run or "last_results" in st.session_state:
+        if search_clicked or auto_run:
+            target_kw = st.session_state.get("search_input", keyword).strip()
+            with st.spinner(f"'{target_kw}' 관련 {platform} {purpose} 인플루언서를 실시간 분석 중..."):
                 if platform == "네이버 블로그":
-                    results = search_naver_blog(keyword, purpose=purpose, max_results=12)
+                    results = search_naver_blog(target_kw, purpose=purpose, max_results=12)
                 else:
-                    results = search_instagram(keyword, purpose=purpose, max_results=12)
+                    results = search_instagram(target_kw, purpose=purpose, max_results=12)
                 st.session_state["last_results"] = results
                 st.session_state["last_platform"] = platform
                 st.session_state["last_purpose"] = purpose
+                st.session_state["last_kw"] = target_kw
         else:
             results = st.session_state.get("last_results", [])
             platform = st.session_state.get("last_platform", platform)
             purpose = st.session_state.get("last_purpose", purpose)
+            target_kw = st.session_state.get("last_kw", keyword)
             
-        st.write(f"총 **{len(results)}명**의 {purpose} 후보를 실시간 발굴했습니다.")
+        st.write(f"총 **{len(results)}명**의 {purpose} 후보를 실시간 발굴했습니다. (검색어: **{target_kw}**)")
         
         for idx, item in enumerate(results):
             score = item["score"]
