@@ -188,11 +188,11 @@ with tab1:
                             "post_url": item["post_url"],
                             "title": item["title"],
                             "snippet": item["snippet"],
-                            "category": keyword,
+                            "category": target_kw,
                             "purpose": purpose,
                             "score": item["score"],
                             "status": "검토중",
-                            "memo": f"검색 키워드: {keyword}"
+                            "memo": f"검색 키워드: {target_kw}"
                         })
                         if saved:
                             st.success(f"'{item['name']}' 후보를 보관함에 저장했습니다!")
