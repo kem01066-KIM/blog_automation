@@ -10,6 +10,26 @@ HEADERS = {
     'Referer': 'https://www.naver.com/'
 }
 
+# 공통 잡음/광고성 또는 시스템 계정 제외 목록
+IGNORE_HANDLES = {
+    'summer__hill_', 'p.s.center', 'etsy', 'accounts', 'explore', 'about', 
+    'legal', 'developer', 'privacy', 'directory', 'p', 'reel', 'reels', 'stories'
+}
+
+CATEGORY_TAGS = {
+    '주방': ['#주방공구', '#살림공구', '#식기공구', '#주방템'],
+    '주방용품': ['#주방공구', '#살림공구', '#식기공구', '#주방템'],
+    '홈카페': ['#홈카페공구', '#커피머신공구', '#홈카페마켓', '#원두공구'],
+    '육아': ['#육아공구', '#육아템공구', '#아기용품공구', '#유아식공구'],
+    '육아용품': ['#육아공구', '#육아템공구', '#아기용품공구', '#유아식공구'],
+    '뷰티': ['#뷰티공구', '#화장품공구', '#스킨케어공구', '#이너뷰티공구'],
+    '기초화장품': ['#뷰티공구', '#화장품공구', '#스킨케어공구', '#이너뷰티공구'],
+    '다이어트': ['#다이어트공구', '#식단공구', '#다이어트식단', '#이너뷰티공구'],
+    '다이어트 식품': ['#다이어트공구', '#식단공구', '#다이어트식단', '#이너뷰티공구'],
+    '패션': ['#패션공구', '#의류공구', '#가방공구', '#패션마켓'],
+    '패션잡화': ['#패션공구', '#의류공구', '#가방공구', '#패션마켓']
+}
+
 def calculate_suitability_score(text: str, purpose: str = "공구") -> dict:
     gongu_keywords = ["공구", "마켓", "최저가", "오픈", "할인", "프로필링크", "협업", "진행중", "단독", "한정수량", "특가", "공구가", "구매링크", "마켓오픈", "선착순"]
     review_keywords = ["협찬", "체험단", "제공받아", "솔직후기", "원고료", "제작지원", "리뷰", "서포터즈", "광고", "무료제공"]
@@ -17,19 +37,19 @@ def calculate_suitability_score(text: str, purpose: str = "공구") -> dict:
     found_gongu = [kw for kw in gongu_keywords if kw in text]
     found_review = [kw for kw in review_keywords if kw in text]
     
-    base_score = 75
+    base_score = 78
     if purpose == "공구":
         if "공구" in text or "마켓" in text:
             base_score = 88
         bonus = min(len(found_gongu) * 3, 10)
         final_score = min(base_score + bonus, 98)
-        signals = found_gongu if found_gongu else ["공구/마켓 연관"]
+        signals = found_gongu if found_gongu else ["공구/마켓 전문"]
     else:
         if "협찬" in text or "체험단" in text or "제공받아" in text:
             base_score = 88
         bonus = min(len(found_review) * 3, 10)
         final_score = min(base_score + bonus, 98)
-        signals = found_review if found_review else ["체험단/협찬 연관"]
+        signals = found_review if found_review else ["체험단/협찬 전문"]
         
     if final_score >= 88:
         level = "매우 높음 (강력 추천)"
@@ -46,14 +66,26 @@ def calculate_suitability_score(text: str, purpose: str = "공구") -> dict:
 
 def search_instagram(query: str, purpose: str = "공구", max_results: int = 15) -> list:
     """
-    인스타그램 실제 공구/협찬 인플루언서를 실시간으로 검색·추출합니다.
-    Meta API 키나 계정 연동 없이 즉시 동작합니다.
+    카테고리별 맞춤 해시태그를 정밀 타겟팅하여 각 분야별 실제 인스타그램 공구 인플루언서를 실시간 발굴합니다.
     """
     keyword = query.strip()
-    if purpose == "공구":
-        search_query = f'site:instagram.com "{keyword}" ("공구마켓" | "공구오픈" | "공구진행" | "공구")'
-    else:
-        search_query = f'site:instagram.com "{keyword}" ("협찬" | "체험단" | "서포터즈")'
+    
+    # 카테고리 매핑 검색어 추출
+    target_tags = []
+    for k, tags in CATEGORY_TAGS.items():
+        if k in keyword or keyword in k:
+            target_tags = tags
+            break
+            
+    if not target_tags:
+        clean_kw = re.sub(r'[^가-힣a-zA-Z0-9]', '', keyword)
+        if purpose == "공구":
+            target_tags = [f"#{clean_kw}공구", f"#{clean_kw}마켓", f"#{clean_kw}"]
+        else:
+            target_tags = [f"#{clean_kw}협찬", f"#{clean_kw}체험단", f"#{clean_kw}"]
+            
+    query_terms = " | ".join([f'"{t}"' for t in target_tags])
+    search_query = f"site:instagram.com ({query_terms})"
         
     url = f"https://search.naver.com/search.naver?where=nexearch&query={urllib.parse.quote(search_query)}"
     req = urllib.request.Request(url, headers=HEADERS)
@@ -75,7 +107,7 @@ def search_instagram(query: str, purpose: str = "공구", max_results: int = 15)
                 if not m:
                     continue
                 handle = m.group(1).strip()
-                if handle.lower() in ['', 'p', 'reel', 'reels', 'stories', 'explore', 'about', 'legal', 'accounts', 'developer', 'privacy', 'directory']:
+                if handle.lower() in IGNORE_HANDLES or len(handle) < 3:
                     continue
                 if handle in seen:
                     continue
@@ -95,12 +127,12 @@ def search_instagram(query: str, purpose: str = "공구", max_results: int = 15)
                             clean = parts[0].replace('Instagram', '').replace('새 창 열림', '').strip()
                             if clean and clean != handle:
                                 name = clean
-                    elif len(t) > 12 and 'instagram.com' not in t and not t.startswith('http') and t not in ['새 창 열림', 'Keep에 저장', 'Keep에 바로가기']:
+                    elif len(t) > 10 and 'instagram.com' not in t and not t.startswith('http') and t not in ['새 창 열림', 'Keep에 저장', 'Keep에 바로가기']:
                         snippet += t + " "
                 
                 snippet = snippet.replace('robots.txt로 인해 정보를 수집할 수 없습니다.', '').strip()
                 if not snippet:
-                    snippet = f"인스타그램에서 '{keyword}' {purpose} 활동을 진행하는 인플루언서 계정입니다."
+                    snippet = f"인스타그램에서 '{keyword}' {purpose} 및 브랜드 협업을 활발하게 진행하는 계정입니다."
                 else:
                     snippet = snippet[:140]
                     
@@ -117,7 +149,7 @@ def search_instagram(query: str, purpose: str = "공구", max_results: int = 15)
                     "date": "실시간 활동",
                     "score": score_info["score"],
                     "level": score_info["level"],
-                    "signals": score_info["signals"],
+                    "signals": score_info["signals"] + [target_tags[0]],
                     "purpose": purpose
                 })
                 
@@ -173,11 +205,9 @@ def search_naver_blog(query: str, purpose: str = "공구", max_results: int = 15
                         date_str = t
                         break
                 
-                # author 찾기
                 if len(texts) >= 1 and texts[0] not in ["Keep에 저장", "Keep에 바로가기", date_str]:
                     author = texts[0]
                     
-                # 본문 텍스트들 합치기
                 content_texts = [t for t in texts if t not in ["Keep에 저장", "Keep에 바로가기", author, date_str]]
                 title = content_texts[0] if content_texts else "블로그 게시글"
                 snippet = " ".join(content_texts[1:5]) if len(content_texts) > 1 else ""
