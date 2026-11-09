@@ -4,4 +4,5 @@ opencv-python-headless
 numpy
 requests
 beautifulsoup4
-openai
+imageio>=2.30.0
+imageio-ffmpeg>=0.4.8
