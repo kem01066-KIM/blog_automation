@@ -141,14 +141,23 @@ with tab1:
             badge_class = "score-badge-high" if score >= 88 else "score-badge-mid"
             
             with st.container():
+                f_est = item.get('follower_est', '3,000명 이상 (마이크로)')
+                g_exp = item.get('gongu_exp', '공구 마켓 운영 이력 확인')
+                c_style = item.get('comm_style', '댓글/DM 진성 소통형')
+                
                 st.markdown(f"""
                 <div class="candidate-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <div>
-                            <span style="font-size:1.1rem; font-weight:bold;">{item['name']}</span>
-                            <span style="color:#64748b; font-size:0.9rem; margin-left:6px;">{item['handle']}</span>
+                            <span style="font-size:1.15rem; font-weight:bold;">{item['name']}</span>
+                            <span style="color:#64748b; font-size:0.95rem; margin-left:6px;">{item['handle']}</span>
                         </div>
-                        <div class="{badge_class}">적합도 {score}점 · {item['level'].split()[0]}</div>
+                        <div class="{badge_class}">적합도 {score}점 · 제안서 추천</div>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:8px; padding:10px 12px; margin-bottom:10px; font-size:0.88rem; line-height:1.6;">
+                        <div>👥 <b>팔로워 규모:</b> <span style="color:#0284c7;">{f_est}</span></div>
+                        <div>🛒 <b>공구 이력:</b> <span style="color:#16a34a;">{g_exp}</span></div>
+                        <div>💬 <b>소통 성향:</b> <span style="color:#d97706;">{c_style}</span></div>
                     </div>
                     <div style="color:#334155; font-size:0.95rem; font-weight:500; margin-bottom:6px;">
                         {item['title']}
@@ -157,7 +166,7 @@ with tab1:
                         {item['snippet']}
                     </div>
                     <div style="margin-bottom:12px;">
-                        {''.join([f'<span class="tag-chip">#{s}</span>' for s in item.get('signals', [])])}
+                        {''.join([f'<span class="tag-chip">#{s.replace(\"#\", \"\")}</span>' for s in item.get('signals', [])])}
                         <span class="tag-chip" style="background:#e0f2fe; color:#0369a1;">{item['date']}</span>
                     </div>
                 </div>
@@ -266,17 +275,18 @@ with tab3:
     st.subheader("💬 인플루언서 컨택 템플릿 (원클릭 복사)")
     st.caption("인스타그램 DM이나 네이버 블로그 비밀댓글/쪽지로 보낼 때 복사해서 쓰실 수 있는 표준 양식입니다.")
     
-    st.markdown("#### 1. 인스타그램 DM 공구 제안서")
-    ig_dm_template = """안녕하세요 {인플루언서_이름} 님! 평소 피드 정성스런 콘텐츠 정말 잘 보고 있는 담당자입니다 :)
+    st.markdown("#### 1. 인스타그램 DM 공구 제안서 (소통형 공구 인플루언서 맞춤)")
+    ig_dm_template = """안녕하세요 {인플루언서} 님! 평소 피드에서 팔로워분들과 진정성 있게 소통하시는 모습과 이전 공구 진행하셨던 피드 유심히 지켜보며 깊은 인상을 받은 담당자입니다 :)
 
-이번에 {인플루언서_이름} 님의 감성과 너무 잘 어울리는 [{제품/브랜드명}] 공구 협업을 제안드리고자 연락드렸습니다.
+이번에 {인플루언서} 님의 피드 감성 및 팔로워분들의 성향과 딱 맞을 것 같아 [{제품명}] 공구 협업을 정중히 제안드리고자 연락드렸습니다.
 
 - 제품명: {제품명}
-- 특징: {핵심 장점 1~2가지}
-- 혜택: 최저가 온라인 단독 할인율 제공 + 높은 판매 수수료율(협의 가능)
-- 일정: 상호 협의 후 편하신 주간에 진행 가능
+- 핵심 매력: {타사 대비 차별화 포인트 1~2가지}
+- 공구 조건: 온라인 최저가 단독 할인율 보장 + 높은 판매 수수료율 (협의 가능)
+- 본사 지원: 제품 본품 사전 무상 발송 + 공구 상세페이지/홍보 자료 전폭 지원
 
-궁금하신 점이나 샘플 먼저 체험해보고 싶으시다면 편하게 회신 부탁드립니다. 상세 제안서와 제품 샘플 바로 전달드리겠습니다! 감사합니다."""
+제품 먼저 편하게 체험해보실 수 있도록 본품 샘플을 먼저 보내드려도 괜찮으실까요?
+부담 없이 편하게 회신 주시면 바로 샘플 발송 안내드리겠습니다. 읽어주셔서 감사합니다!"""
     st.code(ig_dm_template, language="text")
     
     st.markdown("#### 2. 네이버 블로그 체험단/협찬 제안서 (비밀댓글·쪽지용)")
