@@ -144,6 +144,7 @@ with tab1:
                 f_est = item.get('follower_est', '3,000명 이상 (마이크로)')
                 g_exp = item.get('gongu_exp', '공구 마켓 운영 이력 확인')
                 c_style = item.get('comm_style', '댓글/DM 진성 소통형')
+                tags_html = "".join([f'<span class="tag-chip">#{s.lstrip("#")}</span>' for s in item.get('signals', [])])
                 
                 st.markdown(f"""
                 <div class="candidate-card">
@@ -166,7 +167,7 @@ with tab1:
                         {item['snippet']}
                     </div>
                     <div style="margin-bottom:12px;">
-                        {''.join([f'<span class="tag-chip">#{s.replace(\"#\", \"\")}</span>' for s in item.get('signals', [])])}
+                        {tags_html}
                         <span class="tag-chip" style="background:#e0f2fe; color:#0369a1;">{item['date']}</span>
                     </div>
                 </div>
