@@ -73,7 +73,7 @@ with tab1:
     
     col1, col2 = st.columns([1, 1])
     with col1:
-        platform = st.radio("플랫폼 선택", ["네이버 블로그", "인스타그램"], horizontal=True)
+        platform = st.radio("플랫폼 선택", ["인스타그램", "네이버 블로그"], horizontal=True)
     with col2:
         purpose = st.radio("캠페인 목적", ["공구", "체험단"], horizontal=True)
 
