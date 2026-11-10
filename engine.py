@@ -5,8 +5,7 @@ import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont, ImageEnhance
-import cv2
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter
 import imageio
 from bs4 import BeautifulSoup
 
@@ -418,39 +417,35 @@ def create_shortform_video(processed_images, duration=15):
             pil_img = item["image"]
             iw, ih = pil_img.size
 
-            bg_pil = pil_img.resize((W, H))
-            bg_cv = cv2.cvtColor(np.array(bg_pil), cv2.COLOR_RGB2BGR)
-            bg_cv = cv2.GaussianBlur(bg_cv, (51, 51), 0)
-            bg_cv = (bg_cv * 0.45).astype(np.uint8)
+            bg_pil = pil_img.resize((W, H), Image.Resampling.BILINEAR).filter(ImageFilter.GaussianBlur(radius=25))
+            bg_pil = ImageEnhance.Brightness(bg_pil).enhance(0.45)
 
             scale = W / iw
             new_w = W
             new_h = int(ih * scale)
-            fg_pil = pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-            fg_cv = cv2.cvtColor(np.array(fg_pil), cv2.COLOR_RGB2BGR)
             y_offset = max((H - new_h) // 2, 0)
 
             for f in range(frames_per_img):
-                frame = bg_cv.copy()
+                frame = bg_pil.copy()
 
                 zoom = 1.0 + (f / frames_per_img) * 0.035
                 zw = int(new_w * zoom)
                 zh = int(new_h * zoom)
-                fg_zoomed = cv2.resize(fg_cv, (zw, zh), interpolation=cv2.INTER_LINEAR)
+                fg_zoomed = pil_img.resize((zw, zh), Image.Resampling.BILINEAR)
 
-                zx = (zw - W) // 2
-                zy = (zh - new_h) // 2
-                fg_crop = fg_zoomed[zy:zy + new_h, zx:zx + W]
+                zx = max((zw - W) // 2, 0)
+                zy = max((zh - new_h) // 2, 0)
+                fg_crop = fg_zoomed.crop((zx, zy, zx + W, zy + new_h))
 
                 if y_offset + new_h <= H:
-                    frame[y_offset:y_offset + new_h, 0:W] = fg_crop
+                    frame.paste(fg_crop, (0, y_offset))
 
                 progress = (idx * frames_per_img + f) / (num_imgs * frames_per_img)
                 bar_w = int(W * progress)
-                cv2.rectangle(frame, (0, 0), (bar_w, 10), (0, 165, 255), -1)
+                draw = ImageDraw.Draw(frame)
+                draw.rectangle([(0, 0), (bar_w, 10)], fill=(255, 165, 0))
 
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                writer.append_data(frame_rgb)
+                writer.append_data(np.array(frame))
 
         writer.close()
 
