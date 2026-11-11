@@ -5,6 +5,9 @@ Place Insight Pro - 네이버 스마트플레이스 운영 진단 & 새소식 �
 
 import streamlit as st
 import json
+import engine
+import importlib
+importlib.reload(engine)
 from engine import get_industry_terms, calculate_place_audit
 from news_studio import generate_news_post
 from presets import PRESETS
