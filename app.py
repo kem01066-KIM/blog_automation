@@ -150,6 +150,11 @@ st.markdown("""
 st.sidebar.markdown("## 📍 Place Insight Pro")
 st.sidebar.caption("네이버 스마트플레이스 정밀 진단 시스템 (v2.0 확장)")
 
+RUBRIC_VERSION = "2.1"
+if st.session_state.get("rubric_version") != RUBRIC_VERSION:
+    st.session_state.current_data = None
+    st.session_state.rubric_version = RUBRIC_VERSION
+
 preset_options = list(PRESETS.keys()) + ["➕ 직접 매장 정보 입력"]
 selected_preset_name = st.sidebar.selectbox("🎯 진단할 매장 선택", preset_options, index=0)
 
@@ -298,26 +303,26 @@ with tabs[0]:
         r1_cols = st.columns(3)
         with r1_cols[0]:
             st.metric("기본 정보", f"{scores['info']} / 15")
-            st.progress(scores['info'] / 15)
+            st.progress(min(1.0, max(0.0, float(scores['info']) / 15)))
         with r1_cols[1]:
             st.metric("특장점 키워드", f"{scores['strengths']} / 15")
-            st.progress(scores['strengths'] / 15)
+            st.progress(min(1.0, max(0.0, float(scores['strengths']) / 15)))
         with r1_cols[2]:
             st.metric("메뉴 디테일", f"{scores['menu']} / 20")
-            st.progress(scores['menu'] / 20)
+            st.progress(min(1.0, max(0.0, float(scores['menu']) / 20)))
             
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         
         r2_cols = st.columns(3)
         with r2_cols[0]:
             st.metric("각종 기능(예약/콜/쿠폰)", f"{scores['features']} / 25")
-            st.progress(scores['features'] / 25)
+            st.progress(min(1.0, max(0.0, float(scores['features']) / 25)))
         with r2_cols[1]:
             st.metric("리뷰 & 답글 관리", f"{scores['reviews']} / 15")
-            st.progress(scores['reviews'] / 15)
+            st.progress(min(1.0, max(0.0, float(scores['reviews']) / 15)))
         with r2_cols[2]:
             st.metric("새소식 활성도", f"{scores['news']} / 10")
-            st.progress(scores['news'] / 10)
+            st.progress(min(1.0, max(0.0, float(scores['news']) / 10)))
             
         st.markdown("</div>", unsafe_allow_html=True)
 
