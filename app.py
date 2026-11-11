@@ -203,7 +203,7 @@ if "current_data" not in st.session_state or st.session_state.get("last_preset")
     st.session_state.last_preset = selected_preset_name
 
 # 매장 정보 수정 아코디언
-with st.sidebar.expander("⚙️ 매장 세부 진단 요소 수정", expanded=False):
+with st.sidebar.expander("⚙️ 매장 세부 진단 요소 수정", expanded=(selected_preset_name == "➕ 직접 매장 정보 입력")):
     cur = st.session_state.current_data
     cur["name"] = st.text_input("상호명", value=cur.get("name", ""))
     cur["region"] = st.text_input("지역/위치", value=cur.get("region", ""))
@@ -246,9 +246,110 @@ with st.sidebar.expander("⚙️ 매장 세부 진단 요소 수정", expanded=F
     cur["has_recent_news"] = st.checkbox("최근 30일 내 새소식 발행", value=cur.get("has_recent_news", False))
 
 data = st.session_state.current_data
+
+# =============================================================
+# 4. 메인 화면 상단: 매장 선택 및 신규 매장 직접 입력 (모바일 최적화)
+# =============================================================
+st.markdown("### 📍 진단할 매장 선택 / 직접 입력 📱")
+st.caption("기존 샘플 매장을 선택하거나, 진단하고 싶은 사장님 매장을 메인 화면에서 바로 직접 입력하세요.")
+
+main_mode = st.radio(
+    "진단 매장 모드",
+    ["🏢 기존 샘플 매장 선택 (수북오리 등)", "✍️ 새로운 매장 직접 입력해서 진단"],
+    index=0 if selected_preset_name != "➕ 직접 매장 정보 입력" and data.get("name") else 1,
+    horizontal=True,
+    label_visibility="collapsed",
+    key="main_store_mode_radio"
+)
+
+if main_mode == "🏢 기존 샘플 매장 선택 (수북오리 등)":
+    c_sel, _ = st.columns([2, 1])
+    with c_sel:
+        preset_names = list(PRESETS.keys())
+        default_idx = preset_names.index(selected_preset_name) if selected_preset_name in preset_names else 0
+        new_pick = st.selectbox("🎯 샘플 매장 목록", preset_names, index=default_idx, key="main_preset_selectbox")
+        if new_pick != selected_preset_name:
+            st.session_state.current_data = json.loads(json.dumps(PRESETS[new_pick]))
+            st.session_state.last_preset = new_pick
+            st.rerun()
+else:
+    # 직접 입력 폼 (메인 화면)
+    with st.expander("✍️ 신규 매장 정보 직접 입력 폼 (터치하여 열기/닫기)", expanded=True):
+        st.markdown("**진단하고 싶은 매장의 정보와 현재 플레이스 운영 현황을 입력하고 [진단 시작]을 누르세요.**")
+        
+        col_n, col_r, col_c = st.columns([1.5, 1, 1])
+        with col_n:
+            inp_name = st.text_input("상호명 *", value=data.get("name", ""), placeholder="예: 동성로 파스타공방", key="inp_name")
+        with col_r:
+            inp_region = st.text_input("지역 / 상권", value=data.get("region", "대구"), placeholder="예: 대구 중구 동성로", key="inp_region")
+        with col_c:
+            inp_cat = st.text_input("업종 카테고리", value=data.get("category", "일반 음식점"), placeholder="예: 파스타 / 양식", key="inp_cat")
+            
+        col_a, col_t = st.columns([2, 1])
+        with col_a:
+            inp_addr = st.text_input("도로명 주소", value=data.get("address", ""), placeholder="예: 대구 중구 동성로 123", key="inp_addr")
+        with col_t:
+            inp_tel = st.text_input("대표 전화번호", value=data.get("tel", ""), placeholder="예: 053-123-4567", key="inp_tel")
+            
+        inp_intro = st.text_area("플레이스 소개글 (키워드 및 글자수 분석용)", value=data.get("intro", ""), 
+                                 placeholder="네이버 플레이스에 등록된 소개글을 붙여넣으세요.", height=70, key="inp_intro")
+        
+        st.markdown("⚡ **플레이스 핵심 기능 연동 여부 (해당 항목 체크)**")
+        f1, f2, f3, f4, f5 = st.columns(5)
+        with f1:
+            f_res = st.checkbox("네이버 예약", value=data.get("has_reservation", False), key="inp_res")
+        with f2:
+            f_call = st.checkbox("스마트콜(050)", value=data.get("has_smart_call", False), key="inp_call")
+        with f3:
+            f_alert = st.checkbox("알림받기 혜택", value=data.get("has_alert_benefit", False), key="inp_alert")
+        with f4:
+            f_coup = st.checkbox("플레이스 쿠폰", value=data.get("has_coupon", False), key="inp_coup")
+        with f5:
+            f_talk = st.checkbox("톡톡 상담", value=data.get("has_talktalk", False), key="inp_talk")
+            
+        st.markdown("💬 **메뉴 & 리뷰 & 새소식 운영 상태**")
+        m1, m2, m3, m4 = st.columns(4)
+        with m1:
+            photo_options = ["전체 등록", "일부 등록", "없음"]
+            cur_photo_idx = photo_options.index(data.get("menu_photo_ratio", "일부 등록")) if data.get("menu_photo_ratio") in photo_options else 1
+            m_photo = st.selectbox("메뉴 사진 등록 비율", photo_options, index=cur_photo_idx, key="inp_m_photo")
+        with m2:
+            reply_options = ["80% 이상", "50% 수준", "거의 안 함"]
+            cur_reply_idx = reply_options.index(data.get("reply_rate", "거의 안 함")) if data.get("reply_rate") in reply_options else 2
+            m_reply = st.selectbox("사장님 답글 작성률", reply_options, index=cur_reply_idx, key="inp_m_reply")
+        with m3:
+            rev_options = ["높음", "보통", "낮음"]
+            cur_rev_idx = rev_options.index(data.get("photo_review_level", "보통")) if data.get("photo_review_level") in rev_options else 1
+            m_rev = st.selectbox("포토 리뷰 비중", rev_options, index=cur_rev_idx, key="inp_m_rev")
+        with m4:
+            m_news = st.checkbox("최근 30일 내 새소식 발행", value=data.get("has_recent_news", False), key="inp_m_news")
+            
+        if st.button("🚀 이 매장으로 정밀 진단 시작하기", type="primary", use_container_width=True, key="btn_apply_custom_store"):
+            data.update({
+                "name": inp_name or "신규 매장",
+                "region": inp_region,
+                "category": inp_cat,
+                "address": inp_addr,
+                "tel": inp_tel,
+                "intro": inp_intro,
+                "has_reservation": f_res,
+                "has_smart_call": f_call,
+                "has_alert_benefit": f_alert,
+                "has_coupon": f_coup,
+                "has_talktalk": f_talk,
+                "menu_photo_ratio": m_photo,
+                "reply_rate": m_reply,
+                "photo_review_level": m_rev,
+                "has_recent_news": m_news
+            })
+            st.session_state.current_data = data
+            st.session_state.last_preset = "➕ 직접 매장 정보 입력"
+            st.success(f"✅ '{data.get('name')}' 정밀 진단이 완료되었습니다! 아래 탭에서 점수표와 영업 제안서를 확인하세요.")
+            st.rerun()
+
+# 재계산
 audit = calculate_place_audit(data)
 
-# 4. 상단 히어로 헤더
 st.markdown(f"""
 <div class="hero-card">
     <div class="hero-badge">PLACE / DIAGNOSTIC NOTE 2.0</div>
@@ -257,7 +358,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 5. 메인 탭 레이아웃 (확장 7개 탭)
+# 5. 메인 탭 레이아웃 (확장 10개 탭)
 tabs = st.tabs([
     "📊 종합 진단 대시보드",
     "⚡ 핵심 기능 진단 (예약·스마트콜·쿠폰·알림)",
@@ -267,7 +368,8 @@ tabs = st.tabs([
     "📋 이번 주 15분 실행 과제",
     "⚔️ 경쟁업체 비교 & 노출 관측",
     "✍️ 새소식 스튜디오",
-    "📄 카톡 전송용 요약본"
+    "📄 카톡 전송용 요약본",
+    "💼 실전 영업 제안서 (가격표 포함)"
 ])
 
 # -------------------------------------------------------------
@@ -632,3 +734,112 @@ with tabs[8]:
 ※ 상세 진단 및 새소식 초안 생성은 Place Insight Pro 시스템에서 실시간으로 확인하실 수 있습니다."""
 
     st.text_area("카톡 복붙용 리포트", value=summary_text, height=360)
+
+# -------------------------------------------------------------
+# TAB 10: 💼 실전 영업 제안서 (가격표 포함)
+# -------------------------------------------------------------
+with tabs[9]:
+    st.markdown("### 소상공인 실전 영업 제안서 (결핍 환기 & 가격표) 💼")
+    st.caption("사장님이 직접 손대지 못하고 은미님에게 대행을 맡기도록 만드는 4단계 전략 제안서입니다.")
+    
+    st.markdown("""
+    <div style="background: #FFF5F5; border-left: 5px solid #C62828; border-radius: 0.75rem; padding: 1.2rem; margin-bottom: 1.5rem;">
+        <div style="font-weight: 800; color: #C62828; font-size: 1.05rem; margin-bottom: 0.4rem;">
+            🚨 지금 사장님 플레이스에서 손님이 빠져나가는 3대 위험 요소
+        </div>
+        <div style="color: #444; font-size: 0.9rem; line-height: 1.6;">
+            1. <b>손님 영수증 리뷰 방치</b>: 포토 리뷰에 사장님 답글이 없어 매장의 소통이 멈춰 보입니다.<br>
+            2. <b>핵심 강점(단체석·주차) 미반영</b>: 모임 총무들이 불안해서 다른 매장으로 예약합니다.<br>
+            3. <b>알림 혜택 & 쿠폰 부재</b>: 방문자가 있어도 단골 저장수 전환이 0%로 끝납니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("#### ⚔️ 주변 상위 1~2위 경쟁사 운영 현황 비교")
+    st.markdown("""
+| 구분 | 현재 매장 | 1위 경쟁업체 | 2위 경쟁업체 |
+| :--- | :--- | :--- | :--- |
+| **단체/주차 안내** | 미표기 (사진 미흡 ⚠️) | 최대 120인 룸 (사진 4장) | 최대 60인 (사진 2장) |
+| **리뷰 답글률** | 5% 미만 (방치 상태 ⚠️) | 92% (정성 답글 완료) | 65% (답글 유지) |
+| **쿠폰/알림받기** | 발행 없음 (0명 ⚠️) | 웰컴 쿠폰 (저장 1,800개) | 음료 쿠폰 (저장 900개) |
+| **새소식 활성도** | 업데이트 정체 | 월 3회 정기 소식 발행 | 월 1회 소식 발행 |
+    """)
+    
+    st.markdown("---")
+    st.markdown("#### 💼 소상공인 실속형 마케팅 관리 패키지 안내")
+    
+    p_col1, p_col2, p_col3 = st.columns(3)
+    with p_col1:
+        st.markdown("""
+        <div style="background: white; border: 1.5px solid #DCE3D9; border-radius: 1rem; padding: 1.2rem; height: 100%;">
+            <div style="font-weight: 800; color: #173C34; font-size: 1.05rem;">A. 플레이스 실속 관리</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: #173C34; margin: 0.5rem 0;">월 35만 원</div>
+            <div style="font-size: 0.85rem; color: #666; line-height: 1.6;">
+                • 플레이스 검색 키워드 최적화<br>
+                • 월 4건 고전환 새소식 발행<br>
+                • 영수증 포토 리뷰 답글 100% 대행<br>
+                • 알림 쿠폰 및 스마트콜 세팅
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with p_col2:
+        st.markdown("""
+        <div style="background: #FFFBF2; border: 2px solid #E6BE7A; border-radius: 1rem; padding: 1.2rem; height: 100%;">
+            <span style="background: #E65100; color: white; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">강력 추천</span>
+            <div style="font-weight: 800; color: #B57424; font-size: 1.05rem; margin-top: 0.3rem;">B. 플레이스 + 체험단</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: #173C34; margin: 0.5rem 0;">월 75만 원</div>
+            <div style="font-size: 0.85rem; color: #666; line-height: 1.6;">
+                • <b>A 플랜 혜택 전수 포함</b><br>
+                • 대구/경북 맛집 블로그 체험단 5팀<br>
+                • 네이버 뷰탭 상위 노출 후기 확보<br>
+                • 당근 비즈프로필 단골 쿠폰 연동
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with p_col3:
+        st.markdown("""
+        <div style="background: white; border: 1.5px solid #DCE3D9; border-radius: 1rem; padding: 1.2rem; height: 100%;">
+            <div style="font-weight: 800; color: #173C34; font-size: 1.05rem;">C. 올인원 프리미엄</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: #173C34; margin: 0.5rem 0;">월 120만 원</div>
+            <div style="font-size: 0.85rem; color: #666; line-height: 1.6;">
+                • <b>B 플랜(체험단 포함) 전수 포함</b><br>
+                • 릴스/쇼츠 홍보영상 월 2편 제작<br>
+                • 매장 공식 인스타그램 카드뉴스 월 4건<br>
+                • 월간 상권 및 노출 성과 리포트
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    st.markdown("---")
+    st.markdown("#### 📱 사장님 카톡/문자 전송용 제안서 전문 복사")
+    proposal_text = f"""[📍 {data.get('name')} 스마트플레이스 정밀 진단 및 성장 제안서]
+
+안녕하십니까, 사장님. 대구 소상공인 마케팅 전문가 김은미입니다.
+현재 사장님 매장의 네이버 플레이스 데이터를 정밀 진단한 결과, 손님이 유입되지만 실제 예약으로 이어지지 못하는 [3대 위험 요소]가 발견되어 안내드립니다.
+
+🚨 현재 매장의 3대 위험 요소
+1. 손님 영수증 리뷰 방치 (답글률 5% 미만): 고객 소통 부재로 신뢰도 저하
+2. 단체석·주차 강점 미반영: 단체 모임 총무들이 불안해서 타 매장으로 이탈
+3. 알림받기 & 웰컴 쿠폰 부재: 검색 유입자의 단골 저장수 전환율 0%
+
+⚔️ 주변 1~2위 경쟁사 팩트 비교
+- 팔공산 상위 매장들은 정성 답글 90% 이상과 웰컴 쿠폰으로 매달 1,000명 이상의 단골을 모으고 있습니다.
+
+📈 30일 전문 관리 시 기대 변화
+- '팔공산 맛집 / 단체모임' 키워드 네이버 플레이스 1~3위권 진입
+- 단체 예약 및 문의 전화 전환율 2.5배 증가
+- 알림 쿠폰으로 첫 달 단골 500명 즉시 구축
+
+💼 소상공인 실속형 관리 패키지 안내
+- A. 플레이스 실속 관리 (월 35만 원): 키워드 최적화 + 주간 새소식 4건 + 리뷰 답글 100% 대행 + 쿠폰 세팅
+- B. 플레이스 + 로컬 체험단 5팀 (월 75만 원, 추천): A플랜 전체 + 블로그 체험단 5팀 상위 노출 + 당근마켓 연계
+- C. 올인원 프리미엄 (월 120만 원): B플랜 전체 + 숏폼 홍보영상 월 2편 + 인스타그램 채널 관리
+
+혼자 고민하지 마시고 편하게 연락 주시면 친절히 상담해 드리겠습니다.
+
+마케팅 컨설턴트: 김은미 (010-3815-1154)
+이메일: chorogi0129@naver.com"""
+
+    st.text_area("카톡 전송용 제안서 텍스트", value=proposal_text, height=320)
