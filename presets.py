@@ -3,6 +3,48 @@ Place Insight Pro - 검증된 실전 매장 프리셋 데이터 (확장 업그�
 """
 
 PRESETS = {
+    "정스킨&바디 (대구 달서구 / 신월성 피부관리)": {
+        "name": "정스킨&바디",
+        "category": "피부관리 / 에스테틱",
+        "region": "대구 달서구 월성동 (신월성)",
+        "address": "대구 달서구 조암로10길 5 메이플빌딩 1층 108호",
+        "tel": "0507-1427-8784",
+        "hours": "평일 10:00 ~ 21:00 (100% 1:1 맞춤 예약제 / 일요일 휴무)",
+        "directions": "월성CGV 맞은편 메이플빌딩 1층 108호 (조암로10길 5), 엘리베이터 앞 위치",
+        "parking": "메이플빌딩 지하 주차장 이용 가능 (무료 주차 지원)",
+        "intro": "고객님 맞춤 관리 해드립니다 수기관리여서 더 꼼꼼하게 해드립니다",
+        "selected_strengths": [
+            {"label": "1:1 수기관리", "icon": "💆", "synonyms": ["수기", "원장 직접", "1:1 케어", "맞춤"]},
+            {"label": "근막/순환 테라피", "icon": "✨", "synonyms": ["근막", "순환", "체형", "림프"]},
+            {"label": "프라이빗 룸", "icon": "🌿", "synonyms": ["개인룸", "위생", "1인실"]}
+        ],
+        "keywords": ["신월성피부관리", "월성동에스테틱", "대구달서구피부관리", "달서구체형관리", "신월성웨딩케어"],
+        "photo_count": 1,
+        "has_signature_menu": False,
+        "menu_photo_ratio": "없음",
+        "has_menu_desc": False,
+        "has_menu_price": False,
+        "menu_items": [
+            {"name": "맞춤 페이셜 수기관리", "price": "상담 문의", "desc": "고객 피부 상태에 맞춘 1:1 정밀 수기 케어"},
+            {"name": "전신 순환 & 근막 테라피", "price": "상담 문의", "desc": "뭉친 근육과 림프 순환을 돕는 심층 바디 테라피"}
+        ],
+        "amenities": ["주차", "무선 인터넷", "예약"],
+        "has_reservation": False,
+        "has_smart_call": True,
+        "has_alert_benefit": False,
+        "has_coupon": False,
+        "has_talktalk": False,
+        "photo_review_level": "낮음",
+        "reply_rate": "거의 안 함",
+        "reply_quality": "복붙 매크로",
+        "has_recent_news": False,
+        "news_has_photo_link": False,
+        "competitors": [
+            {"name": "정스킨&바디", "capacity": "1:1 예약제 (미표기)", "menu": "가격/사진 미등록 ⚠️", "features": "예약X · 쿠폰X · 톡톡X", "reply": "답글 0% (방치 ⚠️)", "news": "발행 이력 없음 ⚠️"},
+            {"name": "신월성 C에스테틱 (1위)", "capacity": "프라이빗 1인실 4실", "menu": "시술별 가격/사진 100%", "features": "네이버예약O · 첫방문 1만원쿠폰", "reply": "답글 98% (정성)", "news": "주 1회 이벤트 발행"},
+            {"name": "월성동 D뷰티샵 (2위)", "capacity": "원장 1:1 직접 케어", "menu": "부위별 프로그램 등록", "features": "네이버예약O · 알림쿠폰", "reply": "답글 80%", "news": "월 2회 발행"}
+        ]
+    },
     "수북오리 팔공점 (대구 동구 / 팔공산 맛집)": {
         "name": "수북오리 팔공점",
         "category": "오리요리 / 백숙",

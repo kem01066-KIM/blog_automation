@@ -1,3 +1,4 @@
+from url_analyzer import analyze_place_url
 """
 Place Insight Pro - 네이버 스마트플레이스 운영 진단 & 새소식 스튜디오 (확장 업그레이드 버전)
 """
@@ -156,51 +157,22 @@ if st.session_state.get("rubric_version") != RUBRIC_VERSION:
     st.session_state.rubric_version = RUBRIC_VERSION
 
 preset_options = list(PRESETS.keys()) + ["➕ 직접 매장 정보 입력"]
-selected_preset_name = st.sidebar.selectbox("🎯 진단할 매장 선택", preset_options, index=0)
 
-# 세션 스테이트 초기화
-if "current_data" not in st.session_state or st.session_state.get("last_preset") != selected_preset_name:
-    if selected_preset_name in PRESETS:
-        st.session_state.current_data = json.loads(json.dumps(PRESETS[selected_preset_name]))
-    else:
-        st.session_state.current_data = {
-            "name": "",
-            "category": "일반 음식점",
-            "region": "대구",
-            "address": "",
-            "tel": "",
-            "hours": "매일 11:00 ~ 21:00",
-            "directions": "",
-            "parking": "주차 가능",
-            "intro": "",
-            "selected_strengths": [
-                {"label": "단체 가능", "icon": "👥", "synonyms": ["단체석", "모임", "회식"]},
-                {"label": "주차 편리", "icon": "🚗", "synonyms": ["전용 주차장", "무료 주차"]},
-                {"label": "가족 외식", "icon": "👨‍👩‍👧‍👦", "synonyms": ["아기의자", "아이동반"]}
-            ],
-            "keywords": ["대구맛집", "단체모임", "주차편한식당"],
-            "photo_count": 10,
-            "has_signature_menu": True,
-            "menu_photo_ratio": "일부 등록",
-            "has_menu_desc": True,
-            "has_menu_price": True,
-            "menu_items": [
-                {"name": "대표 메뉴 A", "price": "15,000원", "desc": "신선한 재료로 만든 시그니처 메뉴"},
-                {"name": "인기 메뉴 B", "price": "12,000원", "desc": "남녀노소 좋아하는 추천 메뉴"}
-            ],
-            "amenities": ["단체석", "주차", "예약"],
-            "has_reservation": False,
-            "has_smart_call": False,
-            "has_alert_benefit": False,
-            "has_coupon": False,
-            "has_talktalk": False,
-            "photo_review_level": "보통",
-            "reply_rate": "거의 안 함",
-            "reply_quality": "복붙 매크로",
-            "has_recent_news": False,
-            "news_has_photo_link": False
-        }
-    st.session_state.last_preset = selected_preset_name
+if "selected_preset" not in st.session_state:
+    st.session_state.selected_preset = list(PRESETS.keys())[0]
+
+if "current_data" not in st.session_state or st.session_state.current_data is None:
+    st.session_state.current_data = json.loads(json.dumps(PRESETS[st.session_state.selected_preset]))
+
+def on_sidebar_preset_change():
+    chosen = st.session_state.sidebar_preset_selector
+    st.session_state.selected_preset = chosen
+    if chosen in PRESETS:
+        st.session_state.current_data = json.loads(json.dumps(PRESETS[chosen]))
+
+cur_idx = preset_options.index(st.session_state.selected_preset) if st.session_state.selected_preset in preset_options else 0
+selected_preset_name = st.sidebar.selectbox("🎯 진단할 매장 선택", preset_options, index=cur_idx, 
+                                            key="sidebar_preset_selector", on_change=on_sidebar_preset_change)
 
 # 매장 정보 수정 아코디언
 with st.sidebar.expander("⚙️ 매장 세부 진단 요소 수정", expanded=(selected_preset_name == "➕ 직접 매장 정보 입력")):
@@ -250,28 +222,47 @@ data = st.session_state.current_data
 # =============================================================
 # 4. 메인 화면 상단: 매장 선택 및 신규 매장 직접 입력 (모바일 최적화)
 # =============================================================
-st.markdown("### 📍 진단할 매장 선택 / 직접 입력 📱")
-st.caption("기존 샘플 매장을 선택하거나, 진단하고 싶은 사장님 매장을 메인 화면에서 바로 직접 입력하세요.")
+st.markdown("### 📍 스마트플레이스 진단 대상 선택 📱")
 
 main_mode = st.radio(
     "진단 매장 모드",
-    ["🏢 기존 샘플 매장 선택 (수북오리 등)", "✍️ 새로운 매장 직접 입력해서 진단"],
-    index=0 if selected_preset_name != "➕ 직접 매장 정보 입력" and data.get("name") else 1,
+    ["🔗 링크(URL) 자동 진단 (초고속)", "🏢 추천 샘플 매장 (수북오리, 정스킨 등)", "✍️ 직접 입력해서 진단"],
+    index=0,
     horizontal=True,
-    label_visibility="collapsed",
     key="main_store_mode_radio"
 )
 
-if main_mode == "🏢 기존 샘플 매장 선택 (수북오리 등)":
+if main_mode == "🔗 링크(URL) 자동 진단 (초고속)":
+    st.markdown("**네이버 플레이스 지도 링크(URL)나 매장명을 넣으시면 3초 만에 6대 영역 데이터를 자동 추출해 진단합니다.**")
+    u_col1, u_col2 = st.columns([3, 1])
+    with u_col1:
+        url_input = st.text_input("🔗 네이버 플레이스 링크 또는 상호명", 
+                                  placeholder="예: https://m.place.naver.com/place/1264079190/home 또는 '정스킨&바디'", 
+                                  key="main_url_input")
+    with u_col2:
+        st.write("")
+        st.write("")
+        btn_url_analyze = st.button("⚡ 링크 자동 진단 시작", type="primary", use_container_width=True, key="btn_url_analyze")
+        
+    if btn_url_analyze and url_input:
+        parsed_store = analyze_place_url(url_input)
+        if parsed_store:
+            st.session_state.current_data = parsed_store
+            st.session_state.selected_preset = parsed_store.get("name", "신규 분석 매장")
+            st.success(f"✅ '{parsed_store.get('name')}' 플레이스 정보를 성공적으로 분석했습니다! 아래에서 진단 결과를 확인하세요.")
+            st.rerun()
+
+elif main_mode == "🏢 추천 샘플 매장 (수북오리, 정스킨 등)":
     c_sel, _ = st.columns([2, 1])
     with c_sel:
         preset_names = list(PRESETS.keys())
-        default_idx = preset_names.index(selected_preset_name) if selected_preset_name in preset_names else 0
+        default_idx = preset_names.index(st.session_state.selected_preset) if st.session_state.selected_preset in preset_names else 0
         new_pick = st.selectbox("🎯 샘플 매장 목록", preset_names, index=default_idx, key="main_preset_selectbox")
-        if new_pick != selected_preset_name:
+        if new_pick != st.session_state.selected_preset:
             st.session_state.current_data = json.loads(json.dumps(PRESETS[new_pick]))
-            st.session_state.last_preset = new_pick
+            st.session_state.selected_preset = new_pick
             st.rerun()
+
 else:
     # 직접 입력 폼 (메인 화면)
     with st.expander("✍️ 신규 매장 정보 직접 입력 폼 (터치하여 열기/닫기)", expanded=True):
@@ -279,17 +270,17 @@ else:
         
         col_n, col_r, col_c = st.columns([1.5, 1, 1])
         with col_n:
-            inp_name = st.text_input("상호명 *", value=data.get("name", ""), placeholder="예: 동성로 파스타공방", key="inp_name")
+            inp_name = st.text_input("상호명 *", value=data.get("name", ""), placeholder="예: 정스킨&바디", key="inp_name")
         with col_r:
-            inp_region = st.text_input("지역 / 상권", value=data.get("region", "대구"), placeholder="예: 대구 중구 동성로", key="inp_region")
+            inp_region = st.text_input("지역 / 상권", value=data.get("region", "대구"), placeholder="예: 대구 달서구 월성동", key="inp_region")
         with col_c:
-            inp_cat = st.text_input("업종 카테고리", value=data.get("category", "일반 음식점"), placeholder="예: 파스타 / 양식", key="inp_cat")
+            inp_cat = st.text_input("업종 카테고리", value=data.get("category", "일반 음식점"), placeholder="예: 피부관리 / 에스테틱", key="inp_cat")
             
         col_a, col_t = st.columns([2, 1])
         with col_a:
-            inp_addr = st.text_input("도로명 주소", value=data.get("address", ""), placeholder="예: 대구 중구 동성로 123", key="inp_addr")
+            inp_addr = st.text_input("도로명 주소", value=data.get("address", ""), placeholder="예: 대구 달서구 조암로10길 5", key="inp_addr")
         with col_t:
-            inp_tel = st.text_input("대표 전화번호", value=data.get("tel", ""), placeholder="예: 053-123-4567", key="inp_tel")
+            inp_tel = st.text_input("대표 전화번호", value=data.get("tel", ""), placeholder="예: 0507-1427-8784", key="inp_tel")
             
         inp_intro = st.text_area("플레이스 소개글 (키워드 및 글자수 분석용)", value=data.get("intro", ""), 
                                  placeholder="네이버 플레이스에 등록된 소개글을 붙여넣으세요.", height=70, key="inp_intro")
@@ -343,7 +334,7 @@ else:
                 "has_recent_news": m_news
             })
             st.session_state.current_data = data
-            st.session_state.last_preset = "➕ 직접 매장 정보 입력"
+            st.session_state.selected_preset = "➕ 직접 매장 정보 입력"
             st.success(f"✅ '{data.get('name')}' 정밀 진단이 완료되었습니다! 아래 탭에서 점수표와 영업 제안서를 확인하세요.")
             st.rerun()
 
