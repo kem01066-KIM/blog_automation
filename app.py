@@ -150,7 +150,7 @@ st.markdown("""
 st.sidebar.markdown("## 📍 Place Insight Pro")
 st.sidebar.caption("네이버 스마트플레이스 정밀 진단 시스템 (v2.0 확장)")
 
-RUBRIC_VERSION = "2.1"
+RUBRIC_VERSION = "2.2"
 if st.session_state.get("rubric_version") != RUBRIC_VERSION:
     st.session_state.current_data = None
     st.session_state.rubric_version = RUBRIC_VERSION

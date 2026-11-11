@@ -43,10 +43,10 @@ PRESETS = {
         "reply_rate": "거의 안 함",
         "reply_quality": "복붙 매크로",
         # 새소식
-        "has_recent_news": False,
-        "news_has_photo_link": False,
+        "has_recent_news": True, # 10/24 발행 확인
+        "news_has_photo_link": True,
         "competitors": [
-            {"name": "수북오리 팔공점", "capacity": "미표기 (실제 100인)", "menu": "단품 4종 (일부 사진)", "features": "예약O · 쿠폰X · 알림X", "reply": "답글 5% (방치)", "news": "새소식 없음"},
+            {"name": "수북오리 팔공점", "capacity": "미표기 (실제 100인)", "menu": "단품 4종 (일부 사진)", "features": "예약O · 쿠폰X · 알림X", "reply": "답글 5% (방치)", "news": "10/24 발행 (활성)"},
             {"name": "팔공산 A가든 (1위)", "capacity": "최대 120인 룸", "menu": "회식 코스 A/B (사진 100%)", "features": "예약O · 도토리묵쿠폰 · 알림혜택", "reply": "답글 92% (정성)", "news": "월 3회 발행"},
             {"name": "파계로 B식당 (2위)", "capacity": "최대 60인", "menu": "세트 3종 (사진 100%)", "features": "전화만 · 음료쿠폰", "reply": "답글 65%", "news": "월 1회 발행"}
         ]
@@ -90,12 +90,12 @@ PRESETS = {
         "reply_rate": "50% 수준",
         "reply_quality": "정성 답글",
         # 새소식
-        "has_recent_news": False,
-        "news_has_photo_link": False,
+        "has_recent_news": True, # 10/24 발행 확인
+        "news_has_photo_link": True,
         "competitors": [
-            {"name": "정든밥상", "capacity": "확인 필요", "menu": "정식 3종 (사진 100%)", "features": "예약X · 톡톡O · 쿠폰X", "reply": "답글 50%", "news": "새소식 없음"},
+            {"name": "정든밥상", "capacity": "확인 필요", "menu": "정식 3종 (사진 100%)", "features": "예약X · 톡톡O · 쿠폰X", "reply": "답글 50%", "news": "10/24 발행 (활성)"},
             {"name": "성수 ○○식당 (1위)", "capacity": "최대 40인", "menu": "런치·회식 세트 (사진 100%)", "features": "예약O · 음료쿠폰 · 알림혜택", "reply": "답글 88% (정성)", "news": "월 2회 발행"},
-            {"name": "골목 ○○ (2위)", "capacity": "최대 30인", "menu": "코스 3종", "features": "예약O · 사이드쿠폰", "reply": "답글 70%", "news": "새소식 없음"}
+            {"name": "골목 ○○ (2위)", "capacity": "최대 30인", "menu": "코스 3종", "features": "예약O · 사이드쿠폰", "reply": "답글 70%", "news": "10/24 발행 (활성)"}
         ]
     },
     "바로누수설비 (대구 서구 / 누수탐지 전문)": {
@@ -142,7 +142,7 @@ PRESETS = {
         "competitors": [
             {"name": "바로누수설비", "capacity": "대구 전지역", "menu": "시공 3종 (사진 100%)", "features": "예약O · 쿠폰O · 스마트콜O", "reply": "답글 95% (정성)", "news": "월 4회 발행"},
             {"name": "대구 1등 누수", "capacity": "대구·경북", "menu": "탐지 전문", "features": "예약O · 쿠폰X", "reply": "답글 40%", "news": "월 1회 발행"},
-            {"name": "착한 설비", "capacity": "대구 전지역", "menu": "단품 시공", "features": "전화만", "reply": "답글 10%", "news": "새소식 없음"}
+            {"name": "착한 설비", "capacity": "대구 전지역", "menu": "단품 시공", "features": "전화만", "reply": "답글 10%", "news": "10/24 발행 (활성)"}
         ]
     }
 }
