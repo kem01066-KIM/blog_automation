@@ -204,40 +204,42 @@ def calculate_place_audit(data: Dict[str, Any]) -> Dict[str, Any]:
     scores["strengths"] = min(15, strengths_points)
     
     # -------------------------------------------------------------------------
-    # 3. 메뉴 상세 & 메뉴 비주얼 (20점 만점)
+    # 3. 메뉴 / 시술 / 시공 디테일 & 비주얼 (20점 만점)
     # -------------------------------------------------------------------------
     menu_points = 0
     menu_items = data.get("menu_items", [])
     menu_count = len(menu_items)
     
-    # 대표/시그니처 메뉴 지정 (4점)
+    terms = get_industry_terms(data.get("category", ""))
+    
+    # 대표/시그니처 지정 (4점)
     has_signature = data.get("has_signature_menu", True)
     if has_signature and menu_count >= 1:
         menu_points += 4
     else:
         menu_points += 1
-        evidences.append("대표/추천 시그니처 메뉴가 지정되지 않아 첫 방문 고객이 선택 장애를 겪습니다.")
+        evidences.append(terms["missing_signature"])
         
-    # 메뉴 사진 등록률 (6점)
+    # 사진 등록률 (6점)
     menu_photo_ratio = data.get("menu_photo_ratio", "전체 등록")
     if menu_photo_ratio == "전체 등록":
         menu_points += 6
     elif menu_photo_ratio == "일부 등록":
         menu_points += 3
-        evidences.append("메뉴 일부에만 사진이 등록되어 있습니다. 전 메뉴 사진 등록 시 주문 전환율이 35% 상승합니다.")
+        evidences.append(terms["missing_photo_some"])
     else:
         menu_points += 0
-        evidences.append("메뉴 사진이 전혀 없습니다! 텍스트 메뉴판은 모바일 고객 이탈 1위 원인입니다.")
+        evidences.append(terms["missing_photo_none"])
         
-    # 메뉴별 매력적인 한 줄 설명 (6점)
+    # 매력적인 한 줄 설명 (6점)
     has_menu_desc = data.get("has_menu_desc", True)
     if has_menu_desc:
         menu_points += 6
     else:
         menu_points += 2
-        evidences.append("대표 메뉴에 원산지, 식감, 조리 비법 등 매력적인 설명이 누락되어 있습니다.")
+        evidences.append(terms["missing_desc"])
         
-    # 전 메뉴 가격 투명성 (4점)
+    # 가격 투명성 (4점)
     has_menu_price = data.get("has_menu_price", True)
     if has_menu_price and menu_count >= 3:
         menu_points += 4
@@ -245,7 +247,7 @@ def calculate_place_audit(data: Dict[str, Any]) -> Dict[str, Any]:
         menu_points += 2
     else:
         menu_points += 0
-        evidences.append("메뉴판에 가격이 표기되지 않은 항목(변동/시가)이 많아 고객이 부담을 느낍니다.")
+        evidences.append(terms["missing_price"])
         
     scores["menu"] = min(20, menu_points)
     

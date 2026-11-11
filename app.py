@@ -486,15 +486,15 @@ with tabs[2]:
     with m_cols[0]:
         st.markdown(f"""
         <div class="insight-card">
-            <div style="font-weight: 700; color: #75835B;">메뉴 사진 등록 비율</div>
+            <div style="font-weight: 700; color: #75835B;">{terms['item_name']} 사진 등록</div>
             <div style="font-size: 1.3rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">{data.get('menu_photo_ratio')}</div>
-            <div style="font-size: 0.8rem; color: #666;">{'전체 메뉴 고화질 사진 완비' if data.get('menu_photo_ratio') == '전체 등록' else '사진 미등록 메뉴 보강 필요'}</div>
+            <div style="font-size: 0.8rem; color: #666;">{'전체 고화질 사진 완비' if data.get('menu_photo_ratio') == '전체 등록' else '사진 미등록 항목 보강 필요'}</div>
         </div>
         """, unsafe_allow_html=True)
     with m_cols[1]:
         st.markdown(f"""
         <div class="insight-card">
-            <div style="font-weight: 700; color: #75835B;">시그니처 메뉴 지정</div>
+            <div style="font-weight: 700; color: #75835B;">대표 {terms['item_name']} 지정</div>
             <div style="font-size: 1.3rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">{'지정 완료 (대표)' if data.get('has_signature_menu') else '미지정'}</div>
             <div style="font-size: 0.8rem; color: #666;">첫 방문 고객에게 시그니처 뱃지 노출</div>
         </div>
@@ -502,21 +502,21 @@ with tabs[2]:
     with m_cols[2]:
         st.markdown(f"""
         <div class="insight-card">
-            <div style="font-weight: 700; color: #75835B;">메뉴별 스토리 설명</div>
+            <div style="font-weight: 700; color: #75835B;">{terms['item_name']}별 설명</div>
             <div style="font-size: 1.3rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">{'등록됨' if data.get('has_menu_desc') else '미등록'}</div>
-            <div style="font-size: 0.8rem; color: #666;">원산지, 조리 비법, 맛 포인트 한 줄 설명</div>
+            <div style="font-size: 0.8rem; color: #666;">관리 과정, 시공 절차, 특징 1줄 설명</div>
         </div>
         """, unsafe_allow_html=True)
     with m_cols[3]:
         st.markdown(f"""
         <div class="insight-card">
-            <div style="font-weight: 700; color: #75835B;">전 메뉴 가격 투명성</div>
+            <div style="font-weight: 700; color: #75835B;">가격 투명성</div>
             <div style="font-size: 1.3rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">{'100% 공개' if data.get('has_menu_price') else '일부 누락'}</div>
-            <div style="font-size: 0.8rem; color: #666;">가격 미표기(변동/시가) 최소화</div>
+            <div style="font-size: 0.8rem; color: #666;">시술별 관리 비용 및 기준가 공개</div>
         </div>
         """, unsafe_allow_html=True)
         
-    st.markdown("#### 📋 현재 등록된 메뉴 현황")
+    st.markdown(f"#### 📋 현재 등록된 {terms['item_name']} 현황")
     for m in data.get("menu_items", []):
         st.markdown(f"- **{m['name']}** ({m['price']}) : {m.get('desc', '설명 없음')}")
 
