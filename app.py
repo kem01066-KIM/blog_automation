@@ -1,5 +1,5 @@
 """
-Place Insight Pro - 네이버 스마트플레이스 운영 진단 & 새소식 스튜디오
+Place Insight Pro - 네이버 스마트플레이스 운영 진단 & 새소식 스튜디오 (확장 업그레이드 버전)
 """
 
 import streamlit as st
@@ -19,7 +19,6 @@ st.set_page_config(
 # 2. 커스텀 CSS (성수동 감성의 올리브 그린 & 웜 베이지 테마)
 st.markdown("""
 <style>
-    /* 전체 폰트 및 배경 */
     @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
     
     html, body, [class*="css"] {
@@ -149,7 +148,7 @@ st.markdown("""
 
 # 3. 사이드바 - 매장 선택 및 입력
 st.sidebar.markdown("## 📍 Place Insight Pro")
-st.sidebar.caption("네이버 스마트플레이스 정밀 진단 시스템")
+st.sidebar.caption("네이버 스마트플레이스 정밀 진단 시스템 (v2.0 확장)")
 
 preset_options = list(PRESETS.keys()) + ["➕ 직접 매장 정보 입력"]
 selected_preset_name = st.sidebar.selectbox("🎯 진단할 매장 선택", preset_options, index=0)
@@ -176,32 +175,30 @@ if "current_data" not in st.session_state or st.session_state.get("last_preset")
             ],
             "keywords": ["대구맛집", "단체모임", "주차편한식당"],
             "photo_count": 10,
-            "has_menu_photos": True,
+            "has_signature_menu": True,
+            "menu_photo_ratio": "일부 등록",
+            "has_menu_desc": True,
+            "has_menu_price": True,
             "menu_items": [
                 {"name": "대표 메뉴 A", "price": "15,000원", "desc": "신선한 재료로 만든 시그니처 메뉴"},
                 {"name": "인기 메뉴 B", "price": "12,000원", "desc": "남녀노소 좋아하는 추천 메뉴"}
             ],
             "amenities": ["단체석", "주차", "예약"],
             "has_reservation": False,
-            "has_order": False,
-            "has_talktalk": False,
+            "has_smart_call": False,
+            "has_alert_benefit": False,
             "has_coupon": False,
-            "has_recent_news": False
+            "has_talktalk": False,
+            "photo_review_level": "보통",
+            "reply_rate": "거의 안 함",
+            "reply_quality": "복붙 매크로",
+            "has_recent_news": False,
+            "news_has_photo_link": False
         }
     st.session_state.last_preset = selected_preset_name
 
-# URL 빠른 입력 검사창
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🔗 플레이스 URL 진단")
-naver_url_input = st.sidebar.text_input("네이버 플레이스 링크", placeholder="https://m.place.naver.com/restaurant/...", help="네이버 지도나 플레이스 링크를 넣으시면 매장 정보를 불러옵니다.")
-if st.sidebar.button("🔍 URL 분석 실행", use_container_width=True):
-    if naver_url_input.strip():
-        st.sidebar.info("네이버 보안 캡차(ncaptcha) 정책으로 인해 웹 클라우드 직접 조회가 차단될 수 있습니다. 아래 폼에서 세부 정보를 검토하거나 수정하실 수 있습니다.")
-        # 간이 파싱
-        st.session_state.current_data["intro"] = st.session_state.current_data.get("intro", "")
-
 # 매장 정보 수정 아코디언
-with st.sidebar.expander("⚙️ 매장 세부 정보 수정", expanded=False):
+with st.sidebar.expander("⚙️ 매장 세부 진단 요소 수정", expanded=False):
     cur = st.session_state.current_data
     cur["name"] = st.text_input("상호명", value=cur.get("name", ""))
     cur["region"] = st.text_input("지역/위치", value=cur.get("region", ""))
@@ -214,10 +211,33 @@ with st.sidebar.expander("⚙️ 매장 세부 정보 수정", expanded=False):
     cur["intro"] = st.text_area("플레이스 소개글", value=cur.get("intro", ""), height=100)
     cur["photo_count"] = st.number_input("등록 사진 개수", value=cur.get("photo_count", 15), min_value=0, max_value=200)
     
-    st.markdown("**고객 전환 장치**")
-    cur["has_reservation"] = st.checkbox("네이버 예약 활성화", value=cur.get("has_reservation", False))
-    cur["has_talktalk"] = st.checkbox("네이버 톡톡 상담 연결", value=cur.get("has_talktalk", False))
-    cur["has_coupon"] = st.checkbox("플레이스 쿠폰 발행 중", value=cur.get("has_coupon", False))
+    st.markdown("---")
+    st.markdown("🍳 **메뉴명 & 메뉴사진 설정**")
+    cur["menu_photo_ratio"] = st.selectbox("메뉴 사진 등록 비율", ["전체 등록", "일부 등록", "없음"], 
+                                           index=["전체 등록", "일부 등록", "없음"].index(cur.get("menu_photo_ratio", "일부 등록")))
+    cur["has_signature_menu"] = st.checkbox("대표/시그니처 메뉴 지정", value=cur.get("has_signature_menu", True))
+    cur["has_menu_desc"] = st.checkbox("메뉴별 매력적인 한 줄 설명", value=cur.get("has_menu_desc", True))
+    cur["has_menu_price"] = st.checkbox("전 메뉴 가격 투명 공개", value=cur.get("has_menu_price", True))
+    
+    st.markdown("---")
+    st.markdown("⚡ **각종 핵심 기능 연동**")
+    cur["has_reservation"] = st.checkbox("네이버 예약 연동 (당일/시간)", value=cur.get("has_reservation", False))
+    cur["has_smart_call"] = st.checkbox("스마트콜(050 번호) 및 통화연결음", value=cur.get("has_smart_call", False))
+    cur["has_alert_benefit"] = st.checkbox("플레이스 '알림받기' 동의 혜택", value=cur.get("has_alert_benefit", False))
+    cur["has_coupon"] = st.checkbox("플레이스 쿠폰 발행 중 (웰컴/할인)", value=cur.get("has_coupon", False))
+    cur["has_talktalk"] = st.checkbox("네이버 톡톡 1:1 상담 연결", value=cur.get("has_talktalk", False))
+    
+    st.markdown("---")
+    st.markdown("💬 **리뷰 & 사장님 답글 설정**")
+    cur["reply_rate"] = st.selectbox("사장님 답글 작성률", ["80% 이상", "50% 수준", "거의 안 함"],
+                                     index=["80% 이상", "50% 수준", "거의 안 함"].index(cur.get("reply_rate", "거의 안 함")))
+    cur["reply_quality"] = st.selectbox("답글 스타일", ["정성 답글", "복붙 매크로"],
+                                        index=["정성 답글", "복붙 매크로"].index(cur.get("reply_quality", "복붙 매크로")))
+    cur["photo_review_level"] = st.selectbox("포토 리뷰 비중", ["높음", "보통", "낮음"],
+                                            index=["높음", "보통", "낮음"].index(cur.get("photo_review_level", "보통")))
+    
+    st.markdown("---")
+    st.markdown("📢 **새소식 활성도**")
     cur["has_recent_news"] = st.checkbox("최근 30일 내 새소식 발행", value=cur.get("has_recent_news", False))
 
 data = st.session_state.current_data
@@ -226,15 +246,18 @@ audit = calculate_place_audit(data)
 # 4. 상단 히어로 헤더
 st.markdown(f"""
 <div class="hero-card">
-    <div class="hero-badge">PLACE / DIAGNOSTIC NOTE</div>
+    <div class="hero-badge">PLACE / DIAGNOSTIC NOTE 2.0</div>
     <div class="hero-title">{data.get('name', '매장')} 플레이스 정밀 진단</div>
-    <div class="hero-sub">{data.get('region', '')} · {data.get('category', '')} · 2026.11 실시간 운영 데이터 기준</div>
+    <div class="hero-sub">{data.get('region', '')} · {data.get('category', '')} · 6대 핵심 영역 (기능·메뉴·리뷰·특장점) 정밀 진단 기준</div>
 </div>
 """, unsafe_allow_html=True)
 
-# 5. 메인 탭 레이아웃
+# 5. 메인 탭 레이아웃 (확장 7개 탭)
 tabs = st.tabs([
-    "📊 진단 대시보드",
+    "📊 종합 진단 대시보드",
+    "⚡ 핵심 기능 진단 (예약·스마트콜·쿠폰·알림)",
+    "🍳 메뉴 디테일 (메뉴명·가격·사진)",
+    "💬 리뷰 & 사장님 답글 관리",
     "🎯 강점 vs 실제 반영도",
     "📋 이번 주 15분 실행 과제",
     "⚔️ 경쟁업체 비교 & 노출 관측",
@@ -243,10 +266,10 @@ tabs = st.tabs([
 ])
 
 # -------------------------------------------------------------
-# TAB 1: 📊 진단 대시보드
+# TAB 1: 📊 종합 진단 대시보드
 # -------------------------------------------------------------
 with tabs[0]:
-    col1, col2 = st.columns([1, 2])
+    col1, col2 = st.columns([1, 2.2])
     
     with col1:
         st.markdown(f"""
@@ -266,29 +289,39 @@ with tabs[0]:
         
     with col2:
         st.markdown("""<div class="insight-card">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #173C34; margin-bottom: 1rem;">4대 핵심 영역 진단 점수</div>
+            <div style="font-size: 0.95rem; font-weight: 800; color: #173C34; margin-bottom: 1rem;">6대 핵심 영역 진단 점수</div>
         """, unsafe_allow_html=True)
         
         scores = audit['scores']
         
-        # 4개 영역 바
-        cols_m = st.columns(4)
-        with cols_m[0]:
-            st.metric("정보 정확성", f"{scores['info']} / 25")
-            st.progress(scores['info'] / 25)
-        with cols_m[1]:
-            st.metric("특장점 반영", f"{scores['strengths']} / 25")
-            st.progress(scores['strengths'] / 25)
-        with cols_m[2]:
-            st.metric("사진·콘텐츠", f"{scores['content']} / 25")
-            st.progress(scores['content'] / 25)
-        with cols_m[3]:
-            st.metric("고객 전환", f"{scores['conversion']} / 25")
-            st.progress(scores['conversion'] / 25)
+        # 6개 영역 메트릭
+        r1_cols = st.columns(3)
+        with r1_cols[0]:
+            st.metric("기본 정보", f"{scores['info']} / 15")
+            st.progress(scores['info'] / 15)
+        with r1_cols[1]:
+            st.metric("특장점 키워드", f"{scores['strengths']} / 15")
+            st.progress(scores['strengths'] / 15)
+        with r1_cols[2]:
+            st.metric("메뉴 디테일", f"{scores['menu']} / 20")
+            st.progress(scores['menu'] / 20)
+            
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+        
+        r2_cols = st.columns(3)
+        with r2_cols[0]:
+            st.metric("각종 기능(예약/콜/쿠폰)", f"{scores['features']} / 25")
+            st.progress(scores['features'] / 25)
+        with r2_cols[1]:
+            st.metric("리뷰 & 답글 관리", f"{scores['reviews']} / 15")
+            st.progress(scores['reviews'] / 15)
+        with r2_cols[2]:
+            st.metric("새소식 활성도", f"{scores['news']} / 10")
+            st.progress(scores['news'] / 10)
             
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # 핵심 발견 (Field Note 01)
+    # 핵심 발견 (Field Note)
     fn = audit['field_note']
     st.markdown(f"""
     <div class="field-note-card">
@@ -304,16 +337,150 @@ with tabs[0]:
         for ev in audit['evidences']:
             st.markdown(f"- ⚠️ {ev}")
     else:
-        st.success("모든 주요 운영 지표가 양호하게 등록되어 있습니다!")
+        st.success("모든 주요 운영 지표가 완벽하게 세팅되어 있습니다!")
 
 # -------------------------------------------------------------
-# TAB 2: 🎯 사장님 강점 vs 실제 반영도
+# TAB 2: ⚡ 핵심 기능 진단 (예약·스마트콜·알림받기·쿠폰·톡톡)
 # -------------------------------------------------------------
 with tabs[1]:
-    st.markdown("### 사장님이 말한 강점, 손님 눈에도 보이나요? 👀")
-    st.caption("사장님은 '우리 집은 단체도 되고 주차도 편하다'고 생각하지만, 실제 플레이스 화면에는 손님이 믿고 예약할 증거가 빠져 있는 경우가 많습니다.")
+    st.markdown("### 네이버 플레이스 5대 핵심 기능 연동 진단 ⚡")
+    st.caption("플레이스 방문자를 실제 예약 손님과 '저장하기' 단골로 전환시키는 네이버 공식 무료 기능입니다. (25점 만점)")
     
-    st.markdown("<br>", unsafe_allow_html=True)
+    f_cols = st.columns(5)
+    features_list = [
+        {"name": "네이버 예약", "val": data.get("has_reservation"), "max": 6, "desc": "24시간 자동 예약 접수 및 노출 가산점"},
+        {"name": "스마트콜(050)", "val": data.get("has_smart_call"), "max": 5, "desc": "통화연결음 안내 및 종료 후 위치 자동문자"},
+        {"name": "알림받기 혜택", "val": data.get("has_alert_benefit"), "max": 5, "desc": "소식 알림 동의 고객에게 전용 혜택 제공"},
+        {"name": "플레이스 쿠폰", "val": data.get("has_coupon"), "max": 5, "desc": "‘저장하기’ 수를 폭발시키는 웰컴 혜택"},
+        {"name": "네이버 톡톡", "val": data.get("has_talktalk"), "max": 4, "desc": "통화 부담 없는 1:1 실시간 채팅 문의"}
+    ]
+    
+    for idx, f in enumerate(features_list):
+        with f_cols[idx]:
+            is_on = f["val"]
+            badge_class = "good" if is_on else "bad"
+            badge_text = "연동 완료" if is_on else "미연동 (0점)"
+            st.markdown(f"""
+            <div class="insight-card" style="text-align: center; height: 210px;">
+                <div style="font-size: 1.05rem; font-weight: 800; color: #173C34; margin-bottom: 0.4rem;">{f['name']}</div>
+                <div><span class="status-badge-{badge_class}">{badge_text}</span></div>
+                <div style="font-size: 0.82rem; color: #6E7F74; margin-top: 0.8rem; line-height: 1.4;">
+                    {f['desc']}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+    st.info("💡 **전환 극대화 팁**: 특히 '알림받기 혜택'과 '플레이스 쿠폰'은 사장님이 비용을 들이지 않고도 고객의 [저장하기] 수를 단기간에 3배 이상 끌어올릴 수 있는 핵심 무기입니다.")
+
+# -------------------------------------------------------------
+# TAB 3: 🍳 메뉴 디테일 (메뉴명·가격·사진)
+# -------------------------------------------------------------
+with tabs[2]:
+    st.markdown("### 메뉴판 디테일 & 비주얼 진단 🍳")
+    st.caption("손님이 플레이스를 켜고 가장 먼저 확인하는 것은 '음식 사진'과 '가격'입니다. (20점 만점)")
+    
+    m_cols = st.columns(4)
+    with m_cols[0]:
+        st.markdown(f"""
+        <div class="insight-card">
+            <div style="font-weight: 700; color: #75835B;">메뉴 사진 등록 비율</div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">{data.get('menu_photo_ratio')}</div>
+            <div style="font-size: 0.8rem; color: #666;">{'전체 메뉴 고화질 사진 완비' if data.get('menu_photo_ratio') == '전체 등록' else '사진 미등록 메뉴 보강 필요'}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_cols[1]:
+        st.markdown(f"""
+        <div class="insight-card">
+            <div style="font-weight: 700; color: #75835B;">시그니처 메뉴 지정</div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">{'지정 완료 (대표)' if data.get('has_signature_menu') else '미지정'}</div>
+            <div style="font-size: 0.8rem; color: #666;">첫 방문 고객에게 시그니처 뱃지 노출</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_cols[2]:
+        st.markdown(f"""
+        <div class="insight-card">
+            <div style="font-weight: 700; color: #75835B;">메뉴별 스토리 설명</div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">{'등록됨' if data.get('has_menu_desc') else '미등록'}</div>
+            <div style="font-size: 0.8rem; color: #666;">원산지, 조리 비법, 맛 포인트 한 줄 설명</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_cols[3]:
+        st.markdown(f"""
+        <div class="insight-card">
+            <div style="font-weight: 700; color: #75835B;">전 메뉴 가격 투명성</div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">{'100% 공개' if data.get('has_menu_price') else '일부 누락'}</div>
+            <div style="font-size: 0.8rem; color: #666;">가격 미표기(변동/시가) 최소화</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    st.markdown("#### 📋 현재 등록된 메뉴 현황")
+    for m in data.get("menu_items", []):
+        st.markdown(f"- **{m['name']}** ({m['price']}) : {m.get('desc', '설명 없음')}")
+
+# -------------------------------------------------------------
+# TAB 4: 💬 리뷰 & 사장님 답글 관리
+# -------------------------------------------------------------
+with tabs[3]:
+    st.markdown("### 영수증 리뷰 & 사장님 정성 답글 관리 💬")
+    st.caption("손님의 리뷰는 매장의 신뢰를 증명하고, 사장님의 답글은 단골을 만듭니다. (15점 만점)")
+    
+    r_cols = st.columns(3)
+    with r_cols[0]:
+        r_rate = data.get("reply_rate")
+        b_class = "good" if r_rate == "80% 이상" else "warn" if r_rate == "50% 수준" else "bad"
+        st.markdown(f"""
+        <div class="insight-card">
+            <div style="font-weight: 700; color: #75835B;">사장님 답글 작성률</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">
+                <span class="status-badge-{b_class}">{r_rate}</span>
+            </div>
+            <div style="font-size: 0.82rem; color: #666; margin-top: 0.5rem;">
+                {'리뷰 10개 중 8개 이상 정성 답글 작성' if r_rate == '80% 이상' else '방치된 리뷰가 많아 고객 소통 단절'}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with r_cols[1]:
+        r_qual = data.get("reply_quality")
+        b_class2 = "good" if r_qual == "정성 답글" else "warn"
+        st.markdown(f"""
+        <div class="insight-card">
+            <div style="font-weight: 700; color: #75835B;">답글 스타일 및 품질</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">
+                <span class="status-badge-{b_class2}">{r_qual}</span>
+            </div>
+            <div style="font-size: 0.82rem; color: #666; margin-top: 0.5rem;">
+                {'손님 닉네임과 주문 메뉴를 언급하는 감동 답글' if r_qual == '정성 답글' else '복붙 매크로성 답변은 감동 저하'}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with r_cols[2]:
+        p_level = data.get("photo_review_level")
+        b_class3 = "good" if p_level == "높음" else "warn"
+        st.markdown(f"""
+        <div class="insight-card">
+            <div style="font-weight: 700; color: #75835B;">포토 리뷰 비율</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: #173C34; margin: 0.3rem 0;">
+                <span class="status-badge-{b_class3}">{p_level}</span>
+            </div>
+            <div style="font-size: 0.82rem; color: #666; margin-top: 0.5rem;">
+                네이버 검색 상위 노출에 가장 강력한 가산점 요소
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    st.markdown("#### 💌 사장님 감동 답글 황금 공식")
+    st.markdown("""
+    1. **고객 닉네임 + 방문 감사 인사**: "○○님, 소중한 주말 가족 식사로 찾아주셔서 진심으로 감사드립니다."
+    2. **고객이 칭찬한 포인트 맞장구**: "남겨주신 사진 속 능이백숙을 너무 맛있게 드셔주셔서 주방 이모님들도 뿌듯해하셨어요!"
+    3. **다음 방문 추천 메뉴 안내**: "다음 번 방문 때는 참숯에 바삭하게 구워내는 생오리구이도 꼭 한번 맛보시길 추천드립니다."
+    """)
+
+# -------------------------------------------------------------
+# TAB 5: 🎯 사장님 강점 vs 실제 반영도
+# -------------------------------------------------------------
+with tabs[4]:
+    st.markdown("### 사장님이 말한 강점, 손님 눈에도 보이나요? 👀")
+    st.caption("사장님은 '우리 집은 단체도 되고 주차도 편하다'고 생각하지만, 실제 플레이스 화면에는 손님이 믿고 예약할 증거가 빠져 있는 경우가 많습니다. (15점 만점)")
     
     eval_cols = st.columns(len(audit['strength_evals']))
     for idx, se in enumerate(audit['strength_evals']):
@@ -329,13 +496,11 @@ with tabs[1]:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            
-    st.info("💡 **개선 팁**: 손님은 설명문에 적힌 추상적인 단어보다 '최대 몇 명?', '주차 몇 대?', '단체석 사진'을 보고 예약을 결정합니다. 숫자가 빠진 강점은 매출로 연결되지 않습니다.")
 
 # -------------------------------------------------------------
-# TAB 3: 📋 이번 주 15분 실행 과제
+# TAB 6: 📋 이번 주 15분 실행 과제
 # -------------------------------------------------------------
-with tabs[2]:
+with tabs[5]:
     st.markdown("### 이번 주, 가장 먼저 고칠 15분 과제 TOP 3 ⚡")
     st.caption("점수만 보고 끝내지 마세요. 스마트플레이스 센터 모바일 앱에서 15분 만에 바꿀 수 있는 우선순위 과제입니다.")
     
@@ -356,20 +521,18 @@ with tabs[2]:
         """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# TAB 4: ⚔️ 경쟁업체 비교 & 노출 관측
+# TAB 7: ⚔️ 경쟁업체 비교 & 노출 관측
 # -------------------------------------------------------------
-with tabs[3]:
+with tabs[6]:
     st.markdown("### 같은 검색어에서, 무엇이 다를까요? ⚔️")
     st.caption("고객이 검색창에서 매장을 고를 때 비교하는 핵심 정보의 공백을 발견합니다.")
     
     comps = data.get("competitors", [])
     if comps:
         st.markdown("""
-        | 업체명 | 단체 수용 인원 | 단체/세트 메뉴 | 단체석 사진 | 예약 방식 | 쿠폰 혜택 |
+        | 업체명 | 단체 수용 인원 | 메뉴 & 사진 | 핵심 기능 세팅 | 사장님 답글 | 새소식 |
         | :--- | :--- | :--- | :--- | :--- | :--- |
-        """ + "\n".join([f"| **{c['name']}** | {c['capacity']} | {c['menu']} | {c['photo']} | {c['reservation']} | {c['coupon']} |" for c in comps]))
-    else:
-        st.write("비교 데이터 준비 중")
+        """ + "\n".join([f"| **{c['name']}** | {c['capacity']} | {c['menu']} | {c['features']} | {c['reply']} | {c['news']} |" for c in comps]))
         
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("### 📡 타겟 키워드 노출 관측 시뮬레이션")
@@ -403,11 +566,11 @@ with tabs[3]:
         """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# TAB 5: ✍️ 새소식 스튜디오 (원클릭 AI 작성기)
+# TAB 8: ✍️ 새소식 스튜디오
 # -------------------------------------------------------------
-with tabs[4]:
+with tabs[7]:
     st.markdown("### 강점을, 고객이 이해하는 이야기로. ✍️")
-    st.caption("특장점과 부족한 증거를 연결해 네이버 스마트플레이스에 바로 올릴 수 있는 맞춤형 새소식을 생성합니다.")
+    st.caption("특장점과 부족한 증거를 연결해 네이버 스마트플레이스에 바로 올릴 수 있는 맞춤형 새소식을 생성합니다. (10점 만점)")
     
     theme_choice = st.radio(
         "발행할 새소식 주제 선택",
@@ -434,22 +597,24 @@ with tabs[4]:
     st.success("위 본문을 복사해서 [네이버 스마트플레이스 센터 > 새소식 등록]에 그대로 붙여넣으시면 3분 만에 최신화가 완료됩니다!")
 
 # -------------------------------------------------------------
-# TAB 6: 📄 카톡 전송용 요약본
+# TAB 9: 📄 카톡 전송용 요약본
 # -------------------------------------------------------------
-with tabs[5]:
+with tabs[8]:
     st.markdown("### 사장님 카톡 전송용 브리핑 요약문 📱")
     st.caption("미팅 전이나 컨설팅 후 사장님 카톡으로 1초 만에 전송할 수 있는 텍스트 브리핑입니다.")
     
-    summary_text = f"""[📍 {data.get('name')} 플레이스 운영 진단 리포트]
+    summary_text = f"""[📍 {data.get('name')} 플레이스 6대 영역 정밀 진단 리포트]
 
 ■ 종합 점수: {audit['total_score']}점 / 100점 ({audit['grade']}등급)
 ■ 진단 요약: {audit['grade_desc']}
 
-▶ 4대 영역별 점수
-- 정보 정확성: {audit['scores']['info']}/25점
-- 특장점 반영: {audit['scores']['strengths']}/25점
-- 사진·콘텐츠: {audit['scores']['content']}/25점
-- 고객 전환장치: {audit['scores']['conversion']}/25점
+▶ 6대 세부 영역별 점수
+- 1. 기본 정보 정확성: {audit['scores']['info']}/15점
+- 2. 특장점 키워드: {audit['scores']['strengths']}/15점
+- 3. 메뉴 디테일(사진/설명): {audit['scores']['menu']}/20점
+- 4. 핵심 기능(예약·콜·쿠폰·알림): {audit['scores']['features']}/25점
+- 5. 리뷰 관리 & 사장님 답글: {audit['scores']['reviews']}/15점
+- 6. 새소식 활성도: {audit['scores']['news']}/10점
 
 ▶ 핵심 발견
 "{audit['field_note']['title']}"
@@ -462,4 +627,4 @@ with tabs[5]:
 
 ※ 상세 진단 및 새소식 초안 생성은 Place Insight Pro 시스템에서 실시간으로 확인하실 수 있습니다."""
 
-    st.text_area("카톡 복붙용 리포트", value=summary_text, height=350)
+    st.text_area("카톡 복붙용 리포트", value=summary_text, height=360)

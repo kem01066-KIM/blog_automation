@@ -1,5 +1,5 @@
 """
-Place Insight Pro - 검증된 실전 매장 프리셋 데이터
+Place Insight Pro - 검증된 실전 매장 프리셋 데이터 (확장 업그레이드 버전)
 """
 
 PRESETS = {
@@ -20,7 +20,11 @@ PRESETS = {
         ],
         "keywords": ["팔공산맛집", "팔공산오리백숙", "팔공산단체모임", "대구오리고기", "파계사맛집"],
         "photo_count": 14,
-        "has_menu_photos": True,
+        # 메뉴 상세
+        "has_signature_menu": True,
+        "menu_photo_ratio": "일부 등록",
+        "has_menu_desc": True,
+        "has_menu_price": True,
         "menu_items": [
             {"name": "능이오리백숙", "price": "70,000원", "desc": "12가지 한약재와 능이버섯으로 진하게 우려낸 최고의 보양식 (3~4인용)"},
             {"name": "생오리 숯불구이", "price": "50,000원", "desc": "국내산 1등급 생오리만을 엄선해 참숯에 구워 먹는 담백한 구이"},
@@ -28,15 +32,23 @@ PRESETS = {
             {"name": "오리훈제바베큐", "price": "55,000원", "desc": "기름기를 쏙 빼고 참나무 향을 가득 머금은 부드러운 훈제"}
         ],
         "amenities": ["단체석", "주차", "예약", "무선 인터넷", "남/녀 화장실 구분", "유아의자"],
+        # 핵심 기능
         "has_reservation": True,
-        "has_order": False,
-        "has_talktalk": False,
+        "has_smart_call": True,
+        "has_alert_benefit": False,
         "has_coupon": False,
+        "has_talktalk": False,
+        # 리뷰 및 답글
+        "photo_review_level": "보통",
+        "reply_rate": "거의 안 함",
+        "reply_quality": "복붙 매크로",
+        # 새소식
         "has_recent_news": False,
+        "news_has_photo_link": False,
         "competitors": [
-            {"name": "수북오리 팔공점", "capacity": "미표기 (실제 100인)", "menu": "단품 4종", "photo": "없음", "reservation": "네이버예약", "coupon": "없음"},
-            {"name": "팔공산 A가든 (1위)", "capacity": "최대 120인 룸", "menu": "회식 코스 A/B", "photo": "단체석 4장", "reservation": "예약·전화", "coupon": "도토리묵 쿠폰"},
-            {"name": "파계로 B식당 (2위)", "capacity": "최대 60인", "menu": "세트 3종", "photo": "단체석 2장", "reservation": "전화 예약", "coupon": "음료 쿠폰"}
+            {"name": "수북오리 팔공점", "capacity": "미표기 (실제 100인)", "menu": "단품 4종 (일부 사진)", "features": "예약O · 쿠폰X · 알림X", "reply": "답글 5% (방치)", "news": "새소식 없음"},
+            {"name": "팔공산 A가든 (1위)", "capacity": "최대 120인 룸", "menu": "회식 코스 A/B (사진 100%)", "features": "예약O · 도토리묵쿠폰 · 알림혜택", "reply": "답글 92% (정성)", "news": "월 3회 발행"},
+            {"name": "파계로 B식당 (2위)", "capacity": "최대 60인", "menu": "세트 3종 (사진 100%)", "features": "전화만 · 음료쿠폰", "reply": "답글 65%", "news": "월 1회 발행"}
         ]
     },
     "정든밥상 (서울 성수동 / 원래 데모 매장)": {
@@ -56,22 +68,34 @@ PRESETS = {
         ],
         "keywords": ["성수역맛집", "성수동한식", "성수동솥밥", "성수가족외식", "성수아이동반"],
         "photo_count": 18,
-        "has_menu_photos": True,
+        # 메뉴 상세
+        "has_signature_menu": True,
+        "menu_photo_ratio": "전체 등록",
+        "has_menu_desc": True,
+        "has_menu_price": True,
         "menu_items": [
             {"name": "제육 솥밥 정식", "price": "14,000원", "desc": "불맛 가득한 제육볶음과 갓 지은 갓 도정 쌀 솥밥"},
             {"name": "보리굴비 솥밥 정식", "price": "22,000원", "desc": "영광 법성포 보리굴비와 시원한 녹차물 솥밥"},
             {"name": "소불고기 전골 (2인)", "price": "36,000원", "desc": "각종 버섯과 야채가 푸짐하게 들어간 달콤 짭조름한 전골"}
         ],
         "amenities": ["단체석", "포장", "유아의자", "무선 인터넷"],
+        # 핵심 기능
         "has_reservation": False,
-        "has_order": False,
-        "has_talktalk": True,
+        "has_smart_call": False,
+        "has_alert_benefit": False,
         "has_coupon": False,
+        "has_talktalk": True,
+        # 리뷰 및 답글
+        "photo_review_level": "보통",
+        "reply_rate": "50% 수준",
+        "reply_quality": "정성 답글",
+        # 새소식
         "has_recent_news": False,
+        "news_has_photo_link": False,
         "competitors": [
-            {"name": "정든밥상", "capacity": "확인 필요", "menu": "정식 3종", "photo": "없음", "reservation": "전화만", "coupon": "없음"},
-            {"name": "성수 ○○식당 (1위)", "capacity": "최대 40인", "menu": "런치·회식 세트", "photo": "3장", "reservation": "전화·예약", "coupon": "음료 쿠폰"},
-            {"name": "골목 ○○ (2위)", "capacity": "최대 30인", "menu": "코스 3종", "photo": "2장", "reservation": "예약", "coupon": "사이드 쿠폰"}
+            {"name": "정든밥상", "capacity": "확인 필요", "menu": "정식 3종 (사진 100%)", "features": "예약X · 톡톡O · 쿠폰X", "reply": "답글 50%", "news": "새소식 없음"},
+            {"name": "성수 ○○식당 (1위)", "capacity": "최대 40인", "menu": "런치·회식 세트 (사진 100%)", "features": "예약O · 음료쿠폰 · 알림혜택", "reply": "답글 88% (정성)", "news": "월 2회 발행"},
+            {"name": "골목 ○○ (2위)", "capacity": "최대 30인", "menu": "코스 3종", "features": "예약O · 사이드쿠폰", "reply": "답글 70%", "news": "새소식 없음"}
         ]
     },
     "바로누수설비 (대구 서구 / 누수탐지 전문)": {
@@ -91,22 +115,34 @@ PRESETS = {
         ],
         "keywords": ["대구누수", "대구누수탐지", "중리동누수", "대구배관공사", "대구방수"],
         "photo_count": 32,
-        "has_menu_photos": True,
+        # 메뉴 상세
+        "has_signature_menu": True,
+        "menu_photo_ratio": "전체 등록",
+        "has_menu_desc": True,
+        "has_menu_price": True,
         "menu_items": [
             {"name": "미세 누수 정밀 탐지", "price": "300,000원~", "desc": "독일제 최첨단 가스탐지기 및 청음기 정밀 진단"},
             {"name": "배관 고압 세척 & 내시경", "price": "250,000원~", "desc": "막힌 하수구 및 배관 속을 100% 뚫어내는 고압세척"},
             {"name": "욕실 및 옥상 방수 공사", "price": "견적 상담", "desc": "우레탄 3중 특수 방수 도포 및 하자 보증 3년"}
         ],
         "amenities": ["주차", "방문출장", "예약"],
+        # 핵심 기능
         "has_reservation": True,
-        "has_order": False,
-        "has_talktalk": True,
+        "has_smart_call": True,
+        "has_alert_benefit": True,
         "has_coupon": True,
+        "has_talktalk": True,
+        # 리뷰 및 답글
+        "photo_review_level": "높음",
+        "reply_rate": "80% 이상",
+        "reply_quality": "정성 답글",
+        # 새소식
         "has_recent_news": True,
+        "news_has_photo_link": True,
         "competitors": [
-            {"name": "바로누수설비", "capacity": "대구 전지역", "menu": "시공 3종", "photo": "시공 32장", "reservation": "네이버예약", "coupon": "출장비할인"},
-            {"name": "대구 1등 누수", "capacity": "대구·경북", "menu": "탐지 전문", "photo": "25장", "reservation": "전화/예약", "coupon": "없음"},
-            {"name": "착한 설비", "capacity": "대구 전지역", "menu": "단품 시공", "photo": "10장", "reservation": "전화만", "coupon": "없음"}
+            {"name": "바로누수설비", "capacity": "대구 전지역", "menu": "시공 3종 (사진 100%)", "features": "예약O · 쿠폰O · 스마트콜O", "reply": "답글 95% (정성)", "news": "월 4회 발행"},
+            {"name": "대구 1등 누수", "capacity": "대구·경북", "menu": "탐지 전문", "features": "예약O · 쿠폰X", "reply": "답글 40%", "news": "월 1회 발행"},
+            {"name": "착한 설비", "capacity": "대구 전지역", "menu": "단품 시공", "features": "전화만", "reply": "답글 10%", "news": "새소식 없음"}
         ]
     }
 }
