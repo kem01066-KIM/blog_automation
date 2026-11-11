@@ -6,6 +6,89 @@ Place Insight Pro - 네이버 스마트플레이스 정밀 운영 진단 엔진 
 import re
 from typing import Dict, List, Any
 
+
+def get_industry_terms(category: str = "") -> Dict[str, str]:
+    """
+    업종 카테고리에 맞게 메뉴/시술/시공 등 맞춤 진단 용어 및 텍스트를 반환합니다.
+    """
+    cat = (category or "").lower()
+    
+    # 1. 뷰티 / 피부 / 미용 / 에스테틱 / 체형 / 헬스 / 네일
+    if any(k in cat for k in ["피부", "에스테틱", "뷰티", "미용", "헤어", "네일", "체형", "바디", "마사지", "테라피", "왁싱", "속눈썹", "피트니스", "헬스", "필라테스", "요가"]):
+        return {
+            "type": "beauty",
+            "item_name": "시술 프로그램",
+            "item_unit": "프로그램",
+            "tab_label": "시술 프로그램 & 가격표 (메뉴)",
+            "conversion_label": "예약 문의율",
+            "missing_signature": "대표 추천 시술 프로그램이 지정되지 않아 첫 방문 고객이 어떤 관리를 받아야 할지 망설입니다.",
+            "missing_photo_some": "시술 관리 사진이 일부만 등록되어 있습니다. 관리 전후/과정 사진 완비 시 예약 문의가 35% 급증합니다.",
+            "missing_photo_none": "시술 과정 및 전후 사진이 전혀 없습니다! 텍스트 가격표는 뷰티 고객 이탈 1위 원인입니다.",
+            "missing_desc": "대표 프로그램에 관리 단계, 사용 제품/앰플, 기대 효과 등 전문적인 설명이 누락되어 있습니다.",
+            "missing_price": "시술별 관리 비용이 공개되지 않아(상담 문의/변동), 고객이 비용 부담에 예약하지 않고 이탈합니다.",
+            "task_title": "대표 시술 프로그램 3개에 관리 과정 사진 & 기대 효과 설명 추가",
+            "task_action": "스마트폰으로 밝고 깔끔하게 찍은 관리실/관리 사진을 등록하고, 1회 체험가, 소요 시간, 사용 앰플 등 궁금증을 해결하는 설명을 덧붙이세요.",
+            "coupon_action": "스마트플레이스 센터 > 프로모션 > 쿠폰에서 '알림받기 한 고객에게 첫 방문 1만 원 할인(또는 맞춤 마스크팩 증정)' 쿠폰을 만들고 [저장 후 사용] 옵션을 켜세요.",
+            "reply_sample": "○○님 정성 가득한 관리 후기 감사합니다. 다음번 방문 때는 수기 근막 테라피도 함께 추천드려요!"
+        }
+        
+    # 2. 설비 / 누수 / 인테리어 / 수리 / 청소 / 이사
+    elif any(k in cat for k in ["누수", "설비", "인테리어", "배관", "수리", "청소", "이사", "방수", "철거", "시공", "as", "에어컨"]):
+        return {
+            "type": "service",
+            "item_name": "시공/작업 항목",
+            "item_unit": "서비스",
+            "tab_label": "시공 항목 & 기준 견적표 (메뉴)",
+            "conversion_label": "출장 문의율",
+            "missing_signature": "전문 특화 시공 분야(예: 미세누수탐지, 고압세척 등)가 대표 항목으로 명확히 지정되지 않았습니다.",
+            "missing_photo_some": "실제 현장 해결 사진이 부족합니다. 작업 전후 비교 사진 등록 시 출장 문의가 40% 상승합니다.",
+            "missing_photo_none": "실제 작업/시공 현장 사진이 없습니다! 시공 증거 사진 부재는 신뢰도 하락의 주원인입니다.",
+            "missing_desc": "시공 장비, 공사 절차, A/S 보증 기간 등 고객을 안심시키는 기술적 설명이 부족합니다.",
+            "missing_price": "기본 출장비 및 탐지/시공 기준 단가가 적혀있지 않아 바가지 우려로 문의를 꺼립니다.",
+            "task_title": "주력 시공 서비스 3개에 현장 해결 사진 & 투명 기준가 등록",
+            "task_action": "첨단 탐지 장비 사진과 함께 '원인 미해결 시 출장비 0원' 등 안심 문구를 등록하세요.",
+            "coupon_action": "스마트플레이스 센터 > 프로모션 > 쿠폰에서 '알림받기 한 고객에게 기본 출장 점검비 5,000원 할인' 쿠폰을 발행하세요.",
+            "reply_sample": "○○님 믿고 맡겨주셔서 감사합니다. 철저한 A/S 보증으로 사후 관리까지 책임지겠습니다!"
+        }
+        
+    # 3. 학원 / 교육 / 교습소
+    elif any(k in cat for k in ["학원", "교육", "교습", "과외", "어학", "음악", "미술", "코딩"]):
+        return {
+            "type": "education",
+            "item_name": "교육 커리큘럼",
+            "item_unit": "강좌",
+            "tab_label": "교육 과정 & 수강료 (메뉴)",
+            "conversion_label": "상담 신청률",
+            "missing_signature": "대표 추천 강좌/클래스가 지정되지 않아 학부모의 탐색이 길어집니다.",
+            "missing_photo_some": "강의실 및 수업 진행 사진이 부족합니다. 쾌적한 학습 환경 사진 등록 시 상담 신청률이 35% 상승합니다.",
+            "missing_photo_none": "학원 시설 및 수업 사진이 전혀 없습니다! 학부모 방문 상담 전환의 핵심 장치가 비어 있습니다.",
+            "missing_desc": "수업 대상, 주차별 진도, 학습 목표 등 구체적인 커리큘럼 설명이 누락되어 있습니다.",
+            "missing_price": "법정 수강료 기준이 명시되지 않아 가격 문의 허들이 높습니다.",
+            "task_title": "대표 강좌 3개에 주차별 커리큘럼 & 수업 사진 등록",
+            "task_action": "레벨별 진도표와 함께 '무료 1:1 레벨테스트 및 입학 상담' 혜택을 등록하세요.",
+            "coupon_action": "스마트플레이스 센터 > 프로모션 > 쿠폰에서 '알림받기 한 학부모님께 첫 달 교재비 무료 쿠폰'을 발행하세요.",
+            "reply_sample": "○○님 소중한 후기 감사드립니다. 아이의 잠재력을 끌어올리는 알찬 수업으로 보답하겠습니다!"
+        }
+        
+    # 4. 음식점 / 식당 / 카페 (기본값)
+    else:
+        return {
+            "type": "food",
+            "item_name": "대표 메뉴",
+            "item_unit": "메뉴",
+            "tab_label": "메뉴 디테일 (메뉴명·가격·사진)",
+            "conversion_label": "주문 전환율",
+            "missing_signature": "대표/추천 시그니처 메뉴가 지정되지 않아 첫 방문 고객이 선택 장애를 겪습니다.",
+            "missing_photo_some": "메뉴 일부에만 사진이 등록되어 있습니다. 전 메뉴 사진 등록 시 주문 전환율이 35% 상승합니다.",
+            "missing_photo_none": "메뉴 사진이 전혀 없습니다! 텍스트 메뉴판은 모바일 고객 이탈 1위 원인입니다.",
+            "missing_desc": "대표 메뉴에 원산지, 식감, 조리 비법 등 매력적인 설명이 누락되어 있습니다.",
+            "missing_price": "메뉴판에 가격이 표기되지 않은 항목(변동/시가)이 많아 고객이 부담을 느낍니다.",
+            "task_title": "대표 메뉴 3개에 고화질 음식 사진 & 1줄 스토리 추가",
+            "task_action": "스마트폰으로 밝은 자연광에서 찍은 시그니처 메뉴 사진을 등록하고, '매일 새벽 우려낸 비법 육수' 같은 킬러 설명을 덧붙이세요.",
+            "coupon_action": "스마트플레이스 센터 > 프로모션 > 쿠폰에서 '알림받기 한 고객에게 음료 1캔 무료' 쿠폰을 만들고 [저장 후 사용] 옵션을 켜세요.",
+            "reply_sample": "○○님 맛있게 드셔주셔서 감사합니다. 다음엔 ○○메뉴도 추천드려요!"
+        }
+
 def calculate_place_audit(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     네이버 스마트플레이스 6대 핵심 영역 100점 만점 정밀 진단
@@ -351,6 +434,8 @@ def generate_priority_tasks(data: Dict[str, Any], scores: Dict[str, int]) -> Lis
     """
     tasks = []
     
+    terms = get_industry_terms(data.get("category", ""))
+    
     # 1. 리뷰 답글 과제
     if scores["reviews"] <= 9:
         tasks.append({
@@ -359,7 +444,7 @@ def generate_priority_tasks(data: Dict[str, Any], scores: Dict[str, int]) -> Lis
             "tag": "리뷰 관리",
             "time": "15분",
             "impact": "최상",
-            "action": "단순 복붙 대신 '○○님 맛있게 드셔주셔서 감사합니다. 다음엔 ○○메뉴도 추천드려요!'처럼 손님 닉네임과 메뉴를 언급하며 따뜻한 답글을 다세요."
+            "action": f"단순 복붙 대신 '{terms['reply_sample']}'처럼 손님 닉네임을 언급하며 따뜻한 정성 답글을 다세요."
         })
         
     # 2. 알림받기 & 쿠폰 과제
@@ -370,18 +455,18 @@ def generate_priority_tasks(data: Dict[str, Any], scores: Dict[str, int]) -> Lis
             "tag": "고객 전환",
             "time": "10분",
             "impact": "높음",
-            "action": "스마트플레이스 센터 > 프로모션 > 쿠폰에서 '알림받기 한 고객에게 음료 1캔 무료' 쿠폰을 만들고 [저장 후 사용] 옵션을 켜세요."
+            "action": terms["coupon_action"]
         })
         
-    # 3. 메뉴 사진 및 설명 보강
+    # 3. 메뉴/시술/시공 사진 및 설명 보강
     if scores["menu"] <= 14:
         tasks.append({
             "id": 3,
-            "title": "대표 메뉴 3개에 고화질 음식 사진 & 1줄 스토리 추가",
-            "tag": "메뉴 디테일",
-            "time": "20분",
+            "title": terms["task_title"],
+            "tag": terms["tab_label"],
+            "time": "15분",
             "impact": "높음",
-            "action": "스마트폰으로 밝은 자연광에서 찍은 시그니처 메뉴 사진을 등록하고, '매일 새벽 우려낸 비법 육수' 같은 킬러 설명을 덧붙이세요."
+            "action": terms["task_action"]
         })
         
     # 4. 스마트콜 통화연결음

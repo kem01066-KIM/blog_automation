@@ -5,7 +5,7 @@ Place Insight Pro - 네이버 스마트플레이스 운영 진단 & 새소식 �
 
 import streamlit as st
 import json
-from engine import calculate_place_audit
+from engine import get_industry_terms, calculate_place_audit
 from news_studio import generate_news_post
 from presets import PRESETS
 
@@ -349,11 +349,13 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 5. 메인 탭 레이아웃 (확장 10개 탭)
+terms = get_industry_terms(data.get("category", ""))
+
+# 5. 메인 탭 레이아웃 (업종 맞춤형 10개 탭)
 tabs = st.tabs([
     "📊 종합 진단 대시보드",
     "⚡ 핵심 기능 진단 (예약·스마트콜·쿠폰·알림)",
-    "🍳 메뉴 디테일 (메뉴명·가격·사진)",
+    f"📋 {terms['tab_label']}",
     "💬 리뷰 & 사장님 답글 관리",
     "🎯 강점 vs 실제 반영도",
     "📋 이번 주 15분 실행 과제",
@@ -401,7 +403,7 @@ with tabs[0]:
             st.metric("특장점 키워드", f"{scores['strengths']} / 15")
             st.progress(min(1.0, max(0.0, float(scores['strengths']) / 15)))
         with r1_cols[2]:
-            st.metric("메뉴 디테일", f"{scores['menu']} / 20")
+            st.metric(terms['item_name'], f"{scores['menu']} / 20")
             st.progress(min(1.0, max(0.0, float(scores['menu']) / 20)))
             
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
@@ -471,11 +473,11 @@ with tabs[1]:
     st.info("💡 **전환 극대화 팁**: 특히 '알림받기 혜택'과 '플레이스 쿠폰'은 사장님이 비용을 들이지 않고도 고객의 [저장하기] 수를 단기간에 3배 이상 끌어올릴 수 있는 핵심 무기입니다.")
 
 # -------------------------------------------------------------
-# TAB 3: 🍳 메뉴 디테일 (메뉴명·가격·사진)
+# TAB 3: 📋 업종별 상품/시술/메뉴 디테일 (사진·가격·설명)
 # -------------------------------------------------------------
 with tabs[2]:
-    st.markdown("### 메뉴판 디테일 & 비주얼 진단 🍳")
-    st.caption("손님이 플레이스를 켜고 가장 먼저 확인하는 것은 '음식 사진'과 '가격'입니다. (20점 만점)")
+    st.markdown(f"### {terms['tab_label']} 진단 📋")
+    st.caption(f"손님이 플레이스를 켜고 가장 먼저 확인하는 것은 '{terms['item_name']} 사진'과 '가격'입니다. (20점 만점)")
     
     m_cols = st.columns(4)
     with m_cols[0]:
