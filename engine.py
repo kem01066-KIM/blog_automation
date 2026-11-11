@@ -406,4 +406,24 @@ def generate_priority_tasks(data: Dict[str, Any], scores: Dict[str, int]) -> Lis
             "action": "새소식 스튜디오 탭에서 생성된 단체석/주차 안내 초안을 복사해 플레이스 새소식에 사진 1장과 함께 올리세요."
         })
         
+    # 부족한 경우 상시 우선순위 과제로 3개 채우기
+    if len(tasks) < 3:
+        tasks.append({
+            "id": len(tasks) + 1,
+            "title": "대표사진 1순위를 '매장 공간+시그니처 상차림'으로 교체",
+            "tag": "콘텐츠 보강",
+            "time": "15분",
+            "impact": "높음",
+            "action": "검색 결과 썸네일에서 손님이 매장의 규모와 신선함을 바로 느낄 수 있는 와이드 상차림 사진을 1번 대표사진으로 지정하세요."
+        })
+    if len(tasks) < 3:
+        tasks.append({
+            "id": len(tasks) + 1,
+            "title": "소개글 첫 3줄에 '수용 인원·주차 대수·예약 방법' 숫자 명시",
+            "tag": "특장점 보강",
+            "time": "15분",
+            "impact": "높음",
+            "action": "'단체 가능' 대신 '최대 100인 단체룸 완비, 전용 주차장 50대, 네이버 1초 간편 예약 가능'처럼 숫자로 명확히 바꿔 적으세요."
+        })
+
     return tasks[:3]

@@ -150,7 +150,7 @@ st.markdown("""
 st.sidebar.markdown("## 📍 Place Insight Pro")
 st.sidebar.caption("네이버 스마트플레이스 정밀 진단 시스템 (v2.0 확장)")
 
-RUBRIC_VERSION = "2.2"
+RUBRIC_VERSION = "2.3"
 if st.session_state.get("rubric_version") != RUBRIC_VERSION:
     st.session_state.current_data = None
     st.session_state.rubric_version = RUBRIC_VERSION
@@ -608,6 +608,7 @@ with tabs[8]:
     st.markdown("### 사장님 카톡 전송용 브리핑 요약문 📱")
     st.caption("미팅 전이나 컨설팅 후 사장님 카톡으로 1초 만에 전송할 수 있는 텍스트 브리핑입니다.")
     
+    tasks_summary_lines = "\n".join([f"{idx+1}. {t['title']} ({t['time']})" for idx, t in enumerate(audit.get('priority_tasks', []))])
     summary_text = f"""[📍 {data.get('name')} 플레이스 6대 영역 정밀 진단 리포트]
 
 ■ 종합 점수: {audit['total_score']}점 / 100점 ({audit['grade']}등급)
@@ -626,9 +627,7 @@ with tabs[8]:
 {audit['field_note']['description']}
 
 ▶ 이번 주 15분 실전 과제
-1. {audit['priority_tasks'][0]['title']} ({audit['priority_tasks'][0]['time']})
-2. {audit['priority_tasks'][1]['title']} ({audit['priority_tasks'][1]['time']})
-3. {audit['priority_tasks'][2]['title']} ({audit['priority_tasks'][2]['time']})
+{tasks_summary_lines}
 
 ※ 상세 진단 및 새소식 초안 생성은 Place Insight Pro 시스템에서 실시간으로 확인하실 수 있습니다."""
 
